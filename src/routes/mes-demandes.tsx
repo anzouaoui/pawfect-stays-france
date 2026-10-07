@@ -10,6 +10,8 @@ export const Route = createFileRoute("/mes-demandes")({
       { name: "description", content: "Suivez l'état de vos demandes de réservation pet-friendly." },
       { property: "og:title", content: "Mes demandes — PetInn" },
       { property: "og:description", content: "Suivi de vos demandes de séjour avec votre chien." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Mine,

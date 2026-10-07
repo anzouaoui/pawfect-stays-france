@@ -2,4 +2,5 @@
 - [x] Demande de réservation validée par l'hôte, frais voyageur
 - [x] Passeport canin
 - [x] Espace hébergeur
+- [x] Fiches logement : galerie photo, équipements canins et règles d’accueil détaillées
 - [ ] Comptes et données partagées (Lovable Cloud) — à valider

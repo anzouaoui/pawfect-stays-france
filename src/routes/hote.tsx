@@ -11,6 +11,8 @@ export const Route = createFileRoute("/hote")({
       { name: "description", content: "Gérez vos demandes de réservation et consultez les passeports canins des voyageurs." },
       { property: "og:title", content: "Espace hébergeur — PetInn" },
       { property: "og:description", content: "Acceptez ou refusez les demandes après avoir consulté le profil des chiens." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Host,

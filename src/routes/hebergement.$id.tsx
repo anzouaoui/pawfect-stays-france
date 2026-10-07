@@ -2,6 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { LISTINGS, SERVICE_FEE_RATE } from "@/lib/data";
 import { uid, useDogs, useRequests } from "@/lib/store";
+import { Bath, Bed, Check, Dog, Fence, PawPrint, ShieldCheck, Waves } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ListingGallery } from "@/components/ListingGallery";
 
 export const Route = createFileRoute("/hebergement/$id")({
   loader: ({ params }) => {
@@ -15,8 +18,8 @@ export const Route = createFileRoute("/hebergement/$id")({
       { name: "description", content: l.description },
       { property: "og:title", content: `${l.name} — ${l.type} pet-friendly` },
       { property: "og:description", content: l.description },
-      { property: "og:image", content: l.image },
-      { name: "twitter:image", content: l.image },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   } : { meta: [{ title: "Introuvable — PetInn" }, { name: "robots", content: "noindex" }] },
   notFoundComponent: () => <p className="p-10 text-center">Hébergement introuvable.</p>,
@@ -42,21 +45,38 @@ function Detail() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <img src={l.image} alt={l.name} className="aspect-[21/9] w-full rounded-3xl object-cover" />
+      <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">← Retour aux hébergements</Link>
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground">{l.type} · {l.city}, {l.region} · ★ {l.rating}</p>
+        <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{l.name}</h1>
+      </div>
+      <ListingGallery key={l.id} photos={l.photos} name={l.name} />
       <div className="mt-8 grid gap-10 md:grid-cols-[1fr_380px]">
         <div>
-          <p className="text-sm text-muted-foreground">{l.type} · {l.city}, {l.region} · ★ {l.rating}</p>
-          <h1 className="mt-1 font-display text-4xl font-bold">{l.name}</h1>
-          <p className="mt-4 text-lg">{l.description}</p>
+          <p className="text-lg leading-relaxed">{l.description}</p>
           <h2 className="mt-8 font-display text-xl font-semibold">Accueil des chiens</h2>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            <li className="rounded-xl border bg-card p-3">{l.fencedGarden ? "✅ Jardin clôturé" : "— Pas de jardin clôturé"}</li>
-            <li className="rounded-xl border bg-card p-3">🐕 Gabarits : {l.sizes.join(", ")}</li>
-            <li className="rounded-xl border bg-card p-3">🔢 Jusqu'à {l.maxDogs} chien{l.maxDogs > 1 ? "s" : ""}</li>
-            <li className="rounded-xl border bg-card p-3">👤 Hôte : {l.host}</li>
+            <li className="flex items-center gap-3 py-2"><Fence className="size-5 shrink-0 text-primary" />{l.fencedGarden ? "Jardin clôturé" : "Pas de jardin clôturé"}</li>
+            <li className="flex items-center gap-3 py-2"><Dog className="size-5 shrink-0 text-primary" />Gabarits : {l.sizes.join(", ")}</li>
+            <li className="flex items-center gap-3 py-2"><PawPrint className="size-5 shrink-0 text-primary" />Jusqu'à {l.maxDogs} chien{l.maxDogs > 1 ? "s" : ""}</li>
+            <li className="flex items-center gap-3 py-2"><ShieldCheck className="size-5 shrink-0 text-primary" />Accueil confirmé par {l.host}</li>
           </ul>
-          <h2 className="mt-8 font-display text-xl font-semibold">Équipements fournis</h2>
-          <div className="mt-3 flex flex-wrap gap-2">{l.equipment.map((e) => <span key={e} className="rounded-full bg-secondary px-3 py-1 text-sm">{e}</span>)}</div>
+          <section className="mt-8 border-t pt-7" aria-labelledby="dog-equipment">
+            <h2 id="dog-equipment" className="font-display text-xl font-semibold">Équipements adaptés aux chiens</h2>
+            <ul className="mt-5 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+              {l.dogEquipment.map((item) => {
+                const Icon = item.title === "Panier" ? Bed : item.title === "Douche pour chien" ? Bath : item.title === "Plage à proximité" ? Waves : Check;
+                return <li key={item.title} className="flex items-start gap-3"><Icon className="mt-1 size-5 shrink-0 text-primary" /><div><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p></div></li>;
+              })}
+            </ul>
+          </section>
+          <section className="mt-8 border-t pt-7" aria-labelledby="dog-rules">
+            <h2 id="dog-rules" className="flex items-center gap-2 font-display text-xl font-semibold"><ShieldCheck className="size-5 text-primary" />Règles d’accueil des chiens</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Conditions d’exemple, à confirmer par l’hébergeur avant toute réservation.</p>
+            <dl className="mt-5 divide-y">
+              {l.dogRules.map((rule) => <div key={rule.title} className="py-4 first:pt-0"><dt className="font-semibold">{rule.title}</dt><dd className="mt-1 text-sm leading-relaxed text-muted-foreground">{rule.description}</dd></div>)}
+            </dl>
+          </section>
         </div>
         <aside className="h-fit rounded-2xl border bg-card p-5 shadow-sm md:sticky md:top-20">
           <p><span className="text-2xl font-bold">{l.price} €</span> / nuit</p>
@@ -79,7 +99,7 @@ function Detail() {
               <div className="flex justify-between"><span>Frais de service PetInn ({SERVICE_FEE_RATE * 100}%)</span><span>{fee} €</span></div>
               <div className="flex justify-between font-semibold"><span>Total</span><span>{subtotal + fee} €</span></div>
             </div>}
-            <button disabled={!ok} onClick={submit} className="mt-4 w-full rounded-xl bg-accent py-3 font-semibold text-accent-foreground disabled:opacity-40">Envoyer la demande</button>
+            <Button disabled={!ok} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">Envoyer la demande</Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">L'hôte valide manuellement votre demande.</p>
           </>)}
         </aside>
