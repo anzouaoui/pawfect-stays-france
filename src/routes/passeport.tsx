@@ -10,6 +10,8 @@ export const Route = createFileRoute("/passeport")({
       { name: "description", content: "Enregistrez nom, race, taille, poids et comportement de votre chien pour simplifier vos réservations." },
       { property: "og:title", content: "Mon passeport canin — PetInn" },
       { property: "og:description", content: "Les infos essentielles de votre chien, jointes à chaque demande." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Passport,

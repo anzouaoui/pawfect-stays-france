@@ -12,9 +12,9 @@ export function ListingGallery({ photos, name }: { photos: ListingPhoto[]; name:
   const move = (step: number) => setActive((value) => (value + step + photos.length) % photos.length);
   return (
     <>
-      <div className="relative grid h-[280px] grid-cols-[2fr_1fr] gap-2 overflow-hidden rounded-2xl sm:h-[380px] sm:grid-cols-[2fr_1fr_1fr]">
+      <div className="relative grid h-[280px] grid-cols-[2fr_1fr] grid-rows-2 gap-2 overflow-hidden rounded-2xl sm:h-[380px] sm:grid-cols-[2fr_1fr_1fr]">
         {photos.map((photo, index) => (
-          <Button key={photo.src} variant="ghost" className={`h-full min-h-0 w-full overflow-hidden rounded-none p-0 ${index === 0 ? "row-span-2" : ""} ${index === 3 ? "hidden sm:flex" : ""}`} onClick={() => { setActive(index); setOpen(true); }} aria-label={`Ouvrir la photo ${index + 1} : ${photo.caption}`}>
+          <Button key={photo.src} variant="ghost" className={`h-full min-h-0 min-w-0 w-full overflow-hidden rounded-none p-0 ${index === 0 ? "row-span-2" : ""} ${index === 3 ? "hidden sm:col-span-2 sm:flex" : ""} ${photos.length === 3 && index > 0 ? "sm:col-span-2" : ""}`} onClick={() => { setActive(index); setOpen(true); }} aria-label={`Ouvrir la photo ${index + 1} : ${photo.caption}`}>
             <img src={photo.src} alt={`${name} — ${photo.caption} (illustration)`} className="h-full w-full object-cover transition-transform duration-300 motion-safe:hover:scale-105" loading={index === 0 ? "eager" : "lazy"} />
           </Button>
         ))}

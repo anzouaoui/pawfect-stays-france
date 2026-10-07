@@ -45,7 +45,7 @@ function Detail() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <Link to="/recherche" className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">← Retour aux hébergements</Link>
+      <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">← Retour aux hébergements</Link>
       <div className="mb-6">
         <p className="text-sm text-muted-foreground">{l.type} · {l.city}, {l.region} · ★ {l.rating}</p>
         <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{l.name}</h1>

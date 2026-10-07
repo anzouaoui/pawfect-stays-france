@@ -11,6 +11,8 @@ export const Route = createFileRoute("/recherche")({
       { name: "description", content: "Filtrez par jardin clôturé, gabarit accepté et équipements fournis pour votre chien." },
       { property: "og:title", content: "Recherche d'hébergements pet-friendly — PetInn" },
       { property: "og:description", content: "Filtres pensés pour les chiens : jardin clôturé, taille, équipements." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Search,

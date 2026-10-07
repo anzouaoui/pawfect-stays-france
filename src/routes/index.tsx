@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Hôtels, campings, villas et villages vacances qui accueillent vraiment votre chien. Réservez sur PetInn." },
       { property: "og:title", content: "PetInn — Voyagez avec votre chien en France" },
       { property: "og:description", content: "Trouvez et réservez des hébergements 100% pet-friendly en France." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,

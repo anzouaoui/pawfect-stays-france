@@ -121,8 +121,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-        <nav className="mx-auto flex max-w-6xl items-center gap-5 px-4 py-3 text-sm">
-          <Link to="/" className="mr-auto font-display text-2xl font-bold text-primary">Pet<span className="text-accent">Inn</span></Link>
+        <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 text-sm sm:flex-nowrap">
+          <Link to="/" className="mr-auto w-full font-display text-2xl font-bold text-primary sm:w-auto">Pet<span className="text-accent">Inn</span></Link>
           <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
           <Link to="/passeport" activeProps={{ className: "font-semibold" }}>Passeport canin</Link>
           <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
