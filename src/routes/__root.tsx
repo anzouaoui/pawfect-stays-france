@@ -78,11 +78,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "PetInn" },
+      { name: "description", content: "Hébergements 100% pet-friendly en France." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -92,6 +89,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;600&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -103,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
@@ -121,7 +120,17 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
+        <nav className="mx-auto flex max-w-6xl items-center gap-5 px-4 py-3 text-sm">
+          <Link to="/" className="mr-auto font-display text-2xl font-bold text-primary">Pet<span className="text-accent">Inn</span></Link>
+          <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
+          <Link to="/passeport" activeProps={{ className: "font-semibold" }}>Passeport canin</Link>
+          <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
+          <Link to="/hote" className="rounded-full bg-primary px-4 py-1.5 text-primary-foreground">Espace hôte</Link>
+        </nav>
+      </header>
+      <main><Outlet /></main>
+      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© PetInn — Voyager avec son chien en France</footer>
     </QueryClientProvider>
   );
 }

@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HoteRouteImport } from './routes/hote'
+import { Route as MesDemandesRouteImport } from './routes/mes-demandes'
+import { Route as PasseportRouteImport } from './routes/passeport'
+import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HoteRoute = HoteRouteImport.update({
+  id: '/hote',
+  path: '/hote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MesDemandesRoute = MesDemandesRouteImport.update({
+  id: '/mes-demandes',
+  path: '/mes-demandes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PasseportRoute = PasseportRouteImport.update({
+  id: '/passeport',
+  path: '/passeport',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RechercheRoute = RechercheRouteImport.update({
+  id: '/recherche',
+  path: '/recherche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HebergementIdRoute = HebergementIdRouteImport.update({
+  id: '/hebergement/$id',
+  path: '/hebergement/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hote': typeof HoteRoute
+  '/mes-demandes': typeof MesDemandesRoute
+  '/passeport': typeof PasseportRoute
+  '/recherche': typeof RechercheRoute
+  '/hebergement/$id': typeof HebergementIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hote': typeof HoteRoute
+  '/mes-demandes': typeof MesDemandesRoute
+  '/passeport': typeof PasseportRoute
+  '/recherche': typeof RechercheRoute
+  '/hebergement/$id': typeof HebergementIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hote': typeof HoteRoute
+  '/mes-demandes': typeof MesDemandesRoute
+  '/passeport': typeof PasseportRoute
+  '/recherche': typeof RechercheRoute
+  '/hebergement/$id': typeof HebergementIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/hote'
+    | '/mes-demandes'
+    | '/passeport'
+    | '/recherche'
+    | '/hebergement/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/hote'
+    | '/mes-demandes'
+    | '/passeport'
+    | '/recherche'
+    | '/hebergement/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/hote'
+    | '/mes-demandes'
+    | '/passeport'
+    | '/recherche'
+    | '/hebergement/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HoteRoute: typeof HoteRoute
+  MesDemandesRoute: typeof MesDemandesRoute
+  PasseportRoute: typeof PasseportRoute
+  RechercheRoute: typeof RechercheRoute
+  HebergementIdRoute: typeof HebergementIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hote': {
+      id: '/hote'
+      path: '/hote'
+      fullPath: '/hote'
+      preLoaderRoute: typeof HoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mes-demandes': {
+      id: '/mes-demandes'
+      path: '/mes-demandes'
+      fullPath: '/mes-demandes'
+      preLoaderRoute: typeof MesDemandesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passeport': {
+      id: '/passeport'
+      path: '/passeport'
+      fullPath: '/passeport'
+      preLoaderRoute: typeof PasseportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recherche': {
+      id: '/recherche'
+      path: '/recherche'
+      fullPath: '/recherche'
+      preLoaderRoute: typeof RechercheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hebergement/$id': {
+      id: '/hebergement/$id'
+      path: '/hebergement/$id'
+      fullPath: '/hebergement/$id'
+      preLoaderRoute: typeof HebergementIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HoteRoute: HoteRoute,
+  MesDemandesRoute: MesDemandesRoute,
+  PasseportRoute: PasseportRoute,
+  RechercheRoute: RechercheRoute,
+  HebergementIdRoute: HebergementIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
