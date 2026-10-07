@@ -4,7 +4,7 @@ import { EQUIPMENT, LISTINGS, TYPES, type Size } from "@/lib/data";
 import { ListingCard } from "@/components/ListingCard";
 
 export const Route = createFileRoute("/recherche")({
-  validateSearch: (s: Record<string, unknown>) => ({ q: (s.q as string) ?? "", type: (s.type as string) ?? "", from: (s.from as string) ?? "", to: (s.to as string) ?? "" }),
+  validateSearch: (s: Record<string, unknown>) => ({ q: (s["q"] as string) ?? "", type: (s["type"] as string) ?? "", from: (s["from"] as string) ?? "", to: (s["to"] as string) ?? "" }),
   head: () => ({
     meta: [
       { title: "Rechercher un hébergement pet-friendly — PetInn" },
