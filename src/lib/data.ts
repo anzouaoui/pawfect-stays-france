@@ -4,7 +4,7 @@ import annecyPhoto from "@/assets/hotel-annecy.jpg.asset.json";
 import gitePhoto from "@/assets/gite-dordogne.jpg.asset.json";
 import villagePhoto from "@/assets/village-landes.jpg.asset.json";
 import parisPhoto from "@/assets/hotel-paris.jpg.asset.json";
-import gardenPhoto from "@/assets/garden.jpg.asset.json";
+import gardenPhoto from "@/assets/garden-space.jpg.asset.json";
 import bedroomPhoto from "@/assets/bedroom.jpg.asset.json";
 import livingPhoto from "@/assets/living-room.jpg.asset.json";
 import coastPhoto from "@/assets/coast.jpg.asset.json";
