@@ -19,6 +19,7 @@ function Home() {
   const nav = useNavigate();
   const [q, setQ] = useState("");
   const [type, setType] = useState("");
+  const [from, setFrom] = useState(""); const [to, setTo] = useState("");
   return (
     <div>
       <section className="bg-primary text-primary-foreground">
@@ -26,9 +27,11 @@ function Home() {
           <p className="text-sm uppercase tracking-widest opacity-80">Vacances à quatre pattes</p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl font-bold leading-tight md:text-6xl">Des séjours où votre chien est le bienvenu, vraiment.</h1>
           <p className="mt-4 max-w-xl opacity-90">Hôtels, campings, villas et villages vacances 100% pet-friendly partout en France.</p>
-          <form onSubmit={(e) => { e.preventDefault(); nav({ to: "/recherche", search: { q, type } }); }}
+          <form onSubmit={(e) => { e.preventDefault(); nav({ to: "/recherche", search: { q, type, from, to } }); }}
             className="mt-8 flex flex-col gap-2 rounded-2xl bg-card p-2 text-foreground shadow-xl md:flex-row">
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Où allez-vous ? (ville, région)" className="flex-1 rounded-xl px-4 py-3 outline-none" />
+            <input type="date" aria-label="Arrivée" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-xl bg-secondary px-3 py-3" />
+            <input type="date" aria-label="Départ" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-xl bg-secondary px-3 py-3" />
             <select value={type} onChange={(e) => setType(e.target.value)} className="rounded-xl bg-secondary px-4 py-3">
               <option value="">Tous types</option>{TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>

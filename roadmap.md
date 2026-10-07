@@ -1,0 +1,5 @@
+- [x] Accueil + recherche (destination, dates, filtres chiens)
+- [x] Demande de réservation validée par l'hôte, frais voyageur
+- [x] Passeport canin
+- [x] Espace hébergeur
+- [ ] Comptes et données partagées (Lovable Cloud) — à valider

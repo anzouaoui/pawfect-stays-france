@@ -4,7 +4,7 @@ import { EQUIPMENT, LISTINGS, TYPES, type Size } from "@/lib/data";
 import { ListingCard } from "@/components/ListingCard";
 
 export const Route = createFileRoute("/recherche")({
-  validateSearch: (s: Record<string, unknown>) => ({ q: (s.q as string) ?? "", type: (s.type as string) ?? "" }),
+  validateSearch: (s: Record<string, unknown>) => ({ q: (s.q as string) ?? "", type: (s.type as string) ?? "", from: (s.from as string) ?? "", to: (s.to as string) ?? "" }),
   head: () => ({
     meta: [
       { title: "Rechercher un hébergement pet-friendly — PetInn" },
@@ -20,6 +20,7 @@ function Search() {
   const s = Route.useSearch();
   const [q, setQ] = useState(s.q);
   const [type, setType] = useState(s.type);
+  const [from, setFrom] = useState(s.from); const [to, setTo] = useState(s.to);
   const [fenced, setFenced] = useState(false);
   const [size, setSize] = useState<Size | "">("");
   const [eq, setEq] = useState<string[]>([]);
@@ -34,6 +35,7 @@ function Search() {
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[260px_1fr]">
       <aside className="space-y-5 rounded-2xl border bg-card p-5 text-sm md:sticky md:top-20 md:self-start">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ville, région…" className="w-full rounded-lg border bg-background px-3 py-2" />
+        <div className="grid grid-cols-2 gap-2"><input type="date" aria-label="Arrivée" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-lg border bg-background px-2 py-2" /><input type="date" aria-label="Départ" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-lg border bg-background px-2 py-2" /></div>
         <select value={type} onChange={(e) => setType(e.target.value)} className="w-full rounded-lg border bg-background px-3 py-2">
           <option value="">Tous types</option>{TYPES.map((t) => <option key={t}>{t}</option>)}
         </select>

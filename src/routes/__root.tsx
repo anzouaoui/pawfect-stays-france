@@ -123,7 +123,7 @@ function RootComponent() {
       <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center gap-5 px-4 py-3 text-sm">
           <Link to="/" className="mr-auto font-display text-2xl font-bold text-primary">Pet<span className="text-accent">Inn</span></Link>
-          <Link to="/recherche" search={{ q: "", type: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
+          <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
           <Link to="/passeport" activeProps={{ className: "font-semibold" }}>Passeport canin</Link>
           <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
           <Link to="/hote" className="rounded-full bg-primary px-4 py-1.5 text-primary-foreground">Espace hôte</Link>
