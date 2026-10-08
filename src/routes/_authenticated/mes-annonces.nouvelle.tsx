@@ -81,8 +81,8 @@ function NewListing() {
       min_nights: Number(f.minNights || 1), available_from: f.from, available_to: f.to, blocked_dates: blocked,
       fenced_garden: f.fenced, sizes, max_dogs: Number(f.maxDogs || 1), equipment, dog_rules: rules,
     });
-    if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Formulaire incomplet");
-    if (files.length < 3) return toast.error("Ajoutez au moins 3 photos.");
+    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Formulaire incomplet"); return; }
+    if (files.length < 3) { toast.error("Ajoutez au moins 3 photos."); return; }
     setBusy(true);
     const paths: string[] = [];
     try {

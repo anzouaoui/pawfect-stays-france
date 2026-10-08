@@ -35,13 +35,13 @@ function MyListings() {
   const toggle = async (l: HostListing) => {
     const status = l.status === "publiée" ? "brouillon" : "publiée";
     const { error } = await supabase.from("host_listings").update({ status }).eq("id", l.id);
-    if (error) return toast.error("Mise à jour impossible.");
+    if (error) { toast.error("Mise à jour impossible."); return; }
     qc.invalidateQueries({ queryKey: ["my-listings"] });
   };
   const remove = async (l: HostListing) => {
     if (!confirm(`Supprimer « ${l.name} » ?`)) return;
     const { error } = await supabase.from("host_listings").delete().eq("id", l.id);
-    if (error) return toast.error("Suppression impossible.");
+    if (error) { toast.error("Suppression impossible."); return; }
     if (l.photos.length) await supabase.storage.from(PHOTO_BUCKET).remove(l.photos);
     qc.invalidateQueries({ queryKey: ["my-listings"] });
   };

@@ -34,24 +34,24 @@ function AuthPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password });
-    if (!parsed.success) return toast.error(parsed.error.issues[0]?.message);
+    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message); return; }
     setBusy(true);
     if (mode === "up") {
       const { error } = await supabase.auth.signUp({ ...parsed.data, options: { emailRedirectTo: window.location.origin + "/mes-annonces" } });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       toast.success("Vérifiez votre boîte mail pour confirmer votre compte.");
     } else {
       const { error } = await supabase.auth.signInWithPassword(parsed.data);
       setBusy(false);
-      if (error) return toast.error("Email ou mot de passe incorrect.");
+      if (error) { toast.error("Email ou mot de passe incorrect."); return; }
       navigate({ to: "/mes-annonces" });
     }
   };
 
   const google = async () => {
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (result.error) return toast.error("Connexion Google impossible.");
+    if (result.error) { toast.error("Connexion Google impossible."); return; }
     if (result.redirected) return;
     navigate({ to: "/mes-annonces" });
   };
