@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      host_listings: {
+        Row: {
+          available_from: string
+          available_to: string
+          blocked_dates: string[]
+          city: string
+          cleaning_fee: number
+          created_at: string
+          description: string
+          dog_fee_per_night: number
+          dog_rules: Json
+          equipment: string[]
+          fenced_garden: boolean
+          id: string
+          max_dogs: number
+          min_nights: number
+          name: string
+          owner_id: string
+          photos: string[]
+          price_per_night: number
+          region: string
+          sizes: string[]
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          available_from: string
+          available_to: string
+          blocked_dates?: string[]
+          city: string
+          cleaning_fee?: number
+          created_at?: string
+          description?: string
+          dog_fee_per_night?: number
+          dog_rules?: Json
+          equipment?: string[]
+          fenced_garden?: boolean
+          id?: string
+          max_dogs?: number
+          min_nights?: number
+          name: string
+          owner_id?: string
+          photos?: string[]
+          price_per_night: number
+          region?: string
+          sizes?: string[]
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          available_from?: string
+          available_to?: string
+          blocked_dates?: string[]
+          city?: string
+          cleaning_fee?: number
+          created_at?: string
+          description?: string
+          dog_fee_per_night?: number
+          dog_rules?: Json
+          equipment?: string[]
+          fenced_garden?: boolean
+          id?: string
+          max_dogs?: number
+          min_nights?: number
+          name?: string
+          owner_id?: string
+          photos?: string[]
+          price_per_night?: number
+          region?: string
+          sizes?: string[]
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
