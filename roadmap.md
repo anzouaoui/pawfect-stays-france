@@ -3,4 +3,6 @@
 - [x] Passeport canin
 - [x] Espace hébergeur
 - [x] Fiches logement : galerie photo, équipements canins et règles d’accueil détaillées
-- [ ] Comptes et données partagées (Lovable Cloud) — à valider
+- [x] Comptes hôtes (Lovable Cloud)
+- [x] Publication d’annonces : photos, tarifs, disponibilités, règles canines
+- [ ] Afficher les annonces publiées dans la recherche et les fiches

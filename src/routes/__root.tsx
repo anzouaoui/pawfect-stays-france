@@ -9,6 +9,8 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -116,6 +118,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -126,11 +137,13 @@ function RootComponent() {
           <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
           <Link to="/passeport" activeProps={{ className: "font-semibold" }}>Passeport canin</Link>
           <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
+          <Link to="/mes-annonces" activeProps={{ className: "font-semibold" }}>Mes annonces</Link>
           <Link to="/hote" className="rounded-full bg-primary px-4 py-1.5 text-primary-foreground">Espace hôte</Link>
         </nav>
       </header>
       <main><Outlet /></main>
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">© PetInn — Voyager avec son chien en France</footer>
+      <Toaster />
     </QueryClientProvider>
   );
 }
