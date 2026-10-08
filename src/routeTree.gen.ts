@@ -18,6 +18,7 @@ import { Route as PasseportRouteImport } from './routes/passeport'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
 import { Route as AuthenticatedMesAnnoncesIndexRouteImport } from './routes/_authenticated/mes-annonces.index'
+import { Route as AuthenticatedMesAnnoncesNouvelleRouteImport } from './routes/_authenticated/mes-annonces.nouvelle'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,12 @@ const AuthenticatedMesAnnoncesIndexRoute =
     path: '/mes-annonces/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMesAnnoncesNouvelleRoute =
+  AuthenticatedMesAnnoncesNouvelleRouteImport.update({
+    id: '/mes-annonces/nouvelle',
+    path: '/mes-annonces/nouvelle',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -83,6 +91,7 @@ export interface FileRoutesByTo {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces': typeof AuthenticatedMesAnnoncesIndexRoute
 }
 export interface FileRoutesById {
@@ -95,6 +104,7 @@ export interface FileRoutesById {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/_authenticated/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/_authenticated/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/hebergement/$id'
+    | '/mes-annonces/nouvelle'
     | '/mes-annonces/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/hebergement/$id'
+    | '/mes-annonces/nouvelle'
     | '/mes-annonces'
   id:
     | '__root__'
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/hebergement/$id'
+    | '/_authenticated/mes-annonces/nouvelle'
     | '/_authenticated/mes-annonces/'
   fileRoutesById: FileRoutesById
 }
@@ -207,14 +220,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMesAnnoncesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mes-annonces/nouvelle': {
+      id: '/_authenticated/mes-annonces/nouvelle'
+      path: '/mes-annonces/nouvelle'
+      fullPath: '/mes-annonces/nouvelle'
+      preLoaderRoute: typeof AuthenticatedMesAnnoncesNouvelleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMesAnnoncesNouvelleRoute: typeof AuthenticatedMesAnnoncesNouvelleRoute
   AuthenticatedMesAnnoncesIndexRoute: typeof AuthenticatedMesAnnoncesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMesAnnoncesNouvelleRoute: AuthenticatedMesAnnoncesNouvelleRoute,
   AuthenticatedMesAnnoncesIndexRoute: AuthenticatedMesAnnoncesIndexRoute,
 }
 
