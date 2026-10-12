@@ -79,7 +79,7 @@ export const getPublishedListings = createServerFn({ method: "GET" }).handler(as
 });
 
 export const getPublishedListing = createServerFn({ method: "GET" })
-  .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const sb = await publicClient();
     const { data: row, error } = await sb.from("host_listings").select("*").eq("id", data.id).eq("status", "publiée").maybeSingle();
