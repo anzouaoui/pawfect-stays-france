@@ -6,6 +6,9 @@ import { Bath, Bed, Check, Dog, Fence, PawPrint, ShieldCheck, Waves } from "luci
 import { Button } from "@/components/ui/button";
 import { ListingGallery } from "@/components/ListingGallery";
 import { getPublishedListing, isAvailable } from "@/lib/public-listings.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { useSessionUser } from "@/lib/booking-requests";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/hebergement/$id")({
   loader: async ({ params }) => {
@@ -46,7 +49,21 @@ function Detail() {
   const unavailable = nights > 0 && !isAvailable(l, inD, outD);
   const ok = nights > 0 && !tooShort && !unavailable && chosen.length > 0 && chosen.length <= l.maxDogs && !tooBig;
 
-  const submit = () => {
+  const user = useSessionUser();
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    if (h) {
+      setBusy(true);
+      const { error } = await supabase.from("booking_requests").insert({
+        listing_id: l.id, host_id: "00000000-0000-0000-0000-000000000000", check_in: inD, check_out: outD,
+        dogs: chosen.map(({ id, name, breed, size, weight, behavior }) => ({ id, name, breed, size, weight, behavior })),
+        message: msg.trim(),
+      });
+      setBusy(false);
+      if (error) { toast.error(error.message.includes("propre logement") ? "Vous ne pouvez pas réserver votre propre logement." : "La demande n’a pas pu être envoyée. Vérifiez les dates et vos chiens."); return; }
+      setSent(true);
+      return;
+    }
     setReqs([{ id: uid(), listingId: l.id, checkIn: inD, checkOut: outD, nights, dogIds: sel, dogs: chosen, message: msg, listingName: l.name, subtotal, fee, status: "en attente", createdAt: new Date().toISOString() }, ...reqs]);
     setSent(true);
   };
@@ -117,7 +134,9 @@ function Detail() {
               <div className="flex justify-between"><span>Frais de service PetInn ({SERVICE_FEE_RATE * 100}%)</span><span>{fee} €</span></div>
               <div className="flex justify-between font-semibold"><span>Total</span><span>{subtotal + fee} €</span></div>
             </div>}
-            <Button disabled={!ok} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">Envoyer la demande</Button>
+            {h && user === null ? (
+              <Button asChild className="mt-4 h-12 w-full"><Link to="/auth" search={{ redirect: `/hebergement/${l.id}` }}>Se connecter pour envoyer la demande</Link></Button>
+            ) : <Button disabled={!ok || busy} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">{busy ? "Envoi…" : "Envoyer la demande"}</Button>}
             <p className="mt-2 text-center text-xs text-muted-foreground">L'hôte valide manuellement votre demande.</p>
           </>)}
         </aside>

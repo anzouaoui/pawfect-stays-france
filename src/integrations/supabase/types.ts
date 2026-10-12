@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_requests: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string
+          dogs: Json
+          fee: number
+          host_id: string
+          id: string
+          listing_id: string
+          listing_name: string
+          message: string
+          nights: number
+          status: string
+          subtotal: number
+          traveler_id: string
+          updated_at: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string
+          dogs?: Json
+          fee?: number
+          host_id: string
+          id?: string
+          listing_id: string
+          listing_name?: string
+          message?: string
+          nights?: number
+          status?: string
+          subtotal?: number
+          traveler_id?: string
+          updated_at?: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          dogs?: Json
+          fee?: number
+          host_id?: string
+          id?: string
+          listing_id?: string
+          listing_name?: string
+          message?: string
+          nights?: number
+          status?: string
+          subtotal?: number
+          traveler_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "host_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       host_listings: {
         Row: {
           available_from: string
