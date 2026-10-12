@@ -5,4 +5,4 @@
 - [x] Fiches logement : galerie photo, équipements canins et règles d’accueil détaillées
 - [x] Comptes hôtes (Lovable Cloud)
 - [x] Publication d’annonces : photos, tarifs, disponibilités, règles canines
-- [ ] Afficher les annonces publiées dans la recherche et les fiches
+- [x] Afficher les annonces publiées dans la recherche et les fiches
