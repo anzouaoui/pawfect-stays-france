@@ -31,7 +31,7 @@ type Row = {
 
 // Signed URLs point at the backend's public address so browsers can load them.
 function publicStorageUrl(signed: string) {
-  const pub = process.env["VITE_SUPABASE_URL"]?.replace(/\/+$/, "");
+  const pub = (import.meta.env["VITE_SUPABASE_URL"] as string | undefined)?.replace(/\/+$/, "");
   const srv = process.env["SUPABASE_URL"]?.replace(/\/+$/, "");
   return pub && srv && signed.startsWith(srv) ? pub + signed.slice(srv.length) : signed;
 }
