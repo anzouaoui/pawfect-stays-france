@@ -13,3 +13,4 @@
 - Store downloaded listing imagery as Lovable asset pointers and keep illustration labels separate from accommodation claims to avoid presenting stock photos as verified property images.
 - Use the shared ListingGallery with accessible dialog navigation for accommodation photos so gallery behavior stays consistent across listings.
 - Host-published listings live in the Cloud `host_listings` table with photos in the private `listing-photos` bucket (owner-folder paths, signed URLs) because public buckets are blocked in this workspace.
+- Booking requests for host-published listings live in Cloud `booking_requests`; a DB trigger assigns the host and computes prices so clients cannot tamper with amounts. Sample-catalogue requests stay in browser storage.
