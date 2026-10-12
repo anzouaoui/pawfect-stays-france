@@ -9,7 +9,7 @@ export function ListingCard({ l }: { l: Listing }) {
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{l.type} · {l.city}, {l.region}</span><span>★ {l.rating}</span>
+          <span>{l.type} · {l.city}, {l.region}</span><span>{l.rating ? `★ ${l.rating}` : "Nouveau"}</span>
         </div>
         <h3 className="mt-1 font-display text-lg font-semibold">{l.name}</h3>
         <div className="mt-2 flex flex-wrap gap-1">

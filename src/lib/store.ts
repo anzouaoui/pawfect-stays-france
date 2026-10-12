@@ -4,7 +4,7 @@ import type { Size } from "./data";
 export type Dog = { id: string; name: string; breed: string; size: Size; weight: number; behavior: string };
 export type BookingRequest = {
   id: string; listingId: string; checkIn: string; checkOut: string; nights: number;
-  dogIds: string[]; dogs: Dog[]; message: string; subtotal: number; fee: number;
+  dogIds: string[]; dogs: Dog[]; message: string; listingName?: string; subtotal: number; fee: number;
   status: "en attente" | "acceptée" | "refusée"; createdAt: string;
 };
 

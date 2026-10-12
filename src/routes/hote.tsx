@@ -30,7 +30,7 @@ function Host() {
       <div className="mt-6 flex gap-2">{(["en attente", "acceptée", "refusée"] as const).map((t) => (
         <button key={t} onClick={() => setTab(t)} className={`rounded-full border px-4 py-1.5 text-sm capitalize ${tab === t ? "bg-primary text-primary-foreground" : ""}`}>{t} ({reqs.filter((r) => r.status === t).length})</button>))}</div>
       <div className="mt-6 space-y-4">
-        {list.map((r) => <RequestCard key={r.id} r={r} host listing={LISTINGS.find((l) => l.id === r.listingId)!}
+        {list.map((r) => <RequestCard key={r.id} r={r} host listing={LISTINGS.find((l) => l.id === r.listingId)}
           actions={r.status === "en attente" && <div className="mt-4 flex gap-2">
             <button onClick={() => set(r.id, "acceptée")} className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">Accepter</button>
             <button onClick={() => set(r.id, "refusée")} className="rounded-xl border px-4 py-2 text-sm">Refuser</button></div>} />)}
