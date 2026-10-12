@@ -23,7 +23,7 @@ function Mine() {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="font-display text-3xl font-bold">Mes demandes</h1>
       <div className="mt-6 space-y-4">
-        {reqs.map((r) => <RequestCard key={r.id} r={r} listing={LISTINGS.find((l) => l.id === r.listingId)!} />)}
+        {reqs.map((r) => <RequestCard key={r.id} r={r} listing={LISTINGS.find((l) => l.id === r.listingId)} />)}
         {!reqs.length && <p className="text-muted-foreground">Aucune demande pour le moment.</p>}
       </div>
     </div>

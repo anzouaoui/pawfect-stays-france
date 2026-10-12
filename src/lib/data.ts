@@ -17,6 +17,8 @@ export type Listing = {
   price: number; rating: number; image: string; description: string;
   fencedGarden: boolean; sizes: Size[]; maxDogs: number; equipment: string[]; host: string;
   photos: ListingPhoto[]; dogEquipment: DogRule[]; dogRules: DogRule[];
+  /** Set for listings published by hosts (real photos, live pricing and availability). */
+  hosted?: { dogFee: number; cleaningFee: number; minNights: number; availableFrom: string; availableTo: string; blockedDates: string[] };
 };
 
 export const SERVICE_FEE_RATE = 0.1;
@@ -42,7 +44,7 @@ const BASE_LISTINGS: Omit<Listing, "photos" | "dogEquipment" | "dogRules">[] = [
   { id: "hotel-paris", name: "Maison Canaille", type: "Hôtel", city: "Paris", region: "Île-de-France", price: 165, rating: 4.4, image: img("photo-1551882547-ff40c63fe5fa"), description: "Boutique-hôtel à deux pas du Canal Saint-Martin, kit de bienvenue pour chien.", fencedGarden: false, sizes: ["petit"], maxDogs: 1, equipment: ["Gamelles", "Panier"], host: "Inès" },
 ];
 
-const equipmentDescriptions: Record<string, string> = {
+export const equipmentDescriptions: Record<string, string> = {
   "Gamelles": "Deux gamelles pour l’eau et les repas, nettoyées entre chaque séjour.",
   "Panier": "Un couchage lavable est mis à disposition. Indiquez le gabarit de votre chien dans votre demande.",
   "Serviettes": "Des serviettes réservées aux chiens pour le retour des promenades.",

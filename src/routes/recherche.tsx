@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { isAvailable, publishedListingsQuery } from "@/lib/public-listings.functions";
 import { EQUIPMENT, LISTINGS, TYPES, type Size } from "@/lib/data";
 import { ListingCard } from "@/components/ListingCard";
 
@@ -15,6 +17,7 @@ export const Route = createFileRoute("/recherche")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: ({ context }) => { context.queryClient.prefetchQuery(publishedListingsQuery()); },
   component: Search,
 });
 
@@ -28,7 +31,9 @@ function Search() {
   const [eq, setEq] = useState<string[]>([]);
   const [max, setMax] = useState(300);
 
-  const res = LISTINGS.filter((l) =>
+  const { data: live } = useQuery(publishedListingsQuery());
+  const all = [...(live?.listings ?? []), ...LISTINGS];
+  const res = all.filter((l) => isAvailable(l, from, to) &&
     (!q || `${l.city} ${l.region} ${l.name}`.toLowerCase().includes(q.toLowerCase())) &&
     (!type || l.type === type) && (!fenced || l.fencedGarden) && (!size || l.sizes.includes(size)) &&
     eq.every((e) => l.equipment.includes(e)) && l.price <= max);

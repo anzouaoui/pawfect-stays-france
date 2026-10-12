@@ -4,11 +4,11 @@ import type { BookingRequest } from "@/lib/store";
 
 const badge = { "en attente": "bg-secondary", "acceptée": "bg-accent text-accent-foreground", "refusée": "bg-destructive text-destructive-foreground" };
 
-export function RequestCard({ r, listing, host, actions }: { r: BookingRequest; listing: Listing; host?: boolean; actions?: ReactNode }) {
+export function RequestCard({ r, listing, host, actions }: { r: BookingRequest; listing?: Listing | undefined; host?: boolean; actions?: ReactNode }) {
   return (
     <div className="rounded-2xl border bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div><h3 className="font-display text-lg font-semibold">{listing.name}</h3>
+        <div><h3 className="font-display text-lg font-semibold">{listing?.name ?? r.listingName ?? "Hébergement"}</h3>
           <p className="text-sm text-muted-foreground">{r.checkIn} → {r.checkOut} · {r.nights} nuit(s)</p></div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badge[r.status]}`}>{r.status}</span>
       </div>
