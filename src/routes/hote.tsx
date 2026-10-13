@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { LISTINGS } from "@/lib/data";
 import { useRequests, type BookingRequest } from "@/lib/store";
@@ -28,6 +28,17 @@ function Host() {
   const user = useSessionUser();
   const { rows } = useLiveRequests(user, "host");
   const [tab, setTab] = useState<Status>("en attente");
+  const prevPending = useRef<Map<string, string>>(new Map());
+  useEffect(() => {
+    if (!rows) return;
+    for (const r of rows) {
+      const prev = prevPending.current.get(r.id);
+      if (prev === "en attente" && r.status === "annulée") {
+        toast.info(`Demande annulée par le voyageur`, { description: `${r.listing_name} — du ${r.check_in} au ${r.check_out}` });
+      }
+    }
+    prevPending.current = new Map(rows.map((r) => [r.id, r.status]));
+  }, [rows]);
   const live = (rows ?? []).map((r) => ({ ...toRequest(r), live: true as const }));
   const all = [...live, ...local.map((r) => ({ ...r, live: false as const }))];
   const list = all.filter((r) => r.status === tab);
