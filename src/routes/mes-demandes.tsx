@@ -26,11 +26,17 @@ function Mine() {
   const [busy, setBusy] = useState<string | null>(null);
   const cancel = async (r: BookingRequest, isLive: boolean) => {
     if (!window.confirm("Annuler cette demande ? L’hôte en sera informé immédiatement.")) return;
-    if (!isLive) { setLocal(local.map((x) => (x.id === r.id ? { ...x, status: "annulée" } : x))); return; }
+    const name = r.listingName ?? LISTINGS.find((l) => l.id === r.listingId)?.name ?? "ce logement";
+    if (!isLive) {
+      setLocal(local.map((x) => (x.id === r.id ? { ...x, status: "annulée" } : x)));
+      toast.success("Demande annulée", { description: `${name} — du ${r.checkIn} au ${r.checkOut}. Aucun montant ne vous sera prélevé.` });
+      return;
+    }
     setBusy(r.id);
     const { error } = await supabase.from("booking_requests").update({ status: "annulée" }).eq("id", r.id);
     setBusy(null);
-    if (error) toast.error("Annulation impossible : la demande a peut-être déjà été traitée."); else toast.success("Demande annulée");
+    if (error) toast.error("Annulation impossible : la demande a peut-être déjà été traitée.");
+    else toast.success("Demande annulée", { description: `${name} — du ${r.checkIn} au ${r.checkOut}. L’hôte a été informé immédiatement.` });
   };
   const cancelBtn = (r: BookingRequest, isLive: boolean) => r.status === "en attente" && (
     <button disabled={busy === r.id} onClick={() => cancel(r, isLive)} className="mt-4 rounded-xl border px-4 py-2 text-sm hover:border-destructive hover:text-destructive disabled:opacity-50">{busy === r.id ? "Annulation…" : "Annuler la demande"}</button>
