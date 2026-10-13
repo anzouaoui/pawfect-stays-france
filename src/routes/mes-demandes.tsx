@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LISTINGS } from "@/lib/data";
-import { useRequests } from "@/lib/store";
+import { useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useRequests, type BookingRequest } from "@/lib/store";
 import { RequestCard } from "@/components/RequestCard";
 import { toRequest, useLiveRequests, useSessionUser } from "@/lib/booking-requests";
 
@@ -19,7 +22,19 @@ export const Route = createFileRoute("/mes-demandes")({
 });
 
 function Mine() {
-  const [local] = useRequests();
+  const [local, setLocal] = useRequests();
+  const [busy, setBusy] = useState<string | null>(null);
+  const cancel = async (r: BookingRequest, isLive: boolean) => {
+    if (!window.confirm("Annuler cette demande ? L’hôte en sera informé immédiatement.")) return;
+    if (!isLive) { setLocal(local.map((x) => (x.id === r.id ? { ...x, status: "annulée" } : x))); return; }
+    setBusy(r.id);
+    const { error } = await supabase.from("booking_requests").update({ status: "annulée" }).eq("id", r.id);
+    setBusy(null);
+    if (error) toast.error("Annulation impossible : la demande a peut-être déjà été traitée."); else toast.success("Demande annulée");
+  };
+  const cancelBtn = (r: BookingRequest, isLive: boolean) => r.status === "en attente" && (
+    <button disabled={busy === r.id} onClick={() => cancel(r, isLive)} className="mt-4 rounded-xl border px-4 py-2 text-sm hover:border-destructive hover:text-destructive disabled:opacity-50">{busy === r.id ? "Annulation…" : "Annuler la demande"}</button>
+  );
   const user = useSessionUser();
   const { rows, error } = useLiveRequests(user, "traveler");
   const live = rows?.map(toRequest) ?? [];
@@ -36,8 +51,8 @@ function Mine() {
       )}
       {error && <p className="mt-6 text-destructive">Impossible de charger vos demandes.</p>}
       <div className="mt-6 space-y-4">
-        {live.map((r) => <RequestCard key={r.id} r={r} />)}
-        {local.map((r) => <RequestCard key={r.id} r={r} listing={LISTINGS.find((l) => l.id === r.listingId)} />)}
+        {live.map((r) => <RequestCard key={r.id} r={r} actions={cancelBtn(r, true)} />)}
+        {local.map((r) => <RequestCard key={r.id} r={r} listing={LISTINGS.find((l) => l.id === r.listingId)} actions={cancelBtn(r, false)} />)}
         {user !== undefined && !live.length && !local.length && <p className="text-muted-foreground">Aucune demande pour le moment.</p>}
       </div>
     </div>

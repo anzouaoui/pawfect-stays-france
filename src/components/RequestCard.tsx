@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { Listing } from "@/lib/data";
 import type { BookingRequest } from "@/lib/store";
 
-const badge = { "en attente": "bg-secondary", "acceptée": "bg-accent text-accent-foreground", "refusée": "bg-destructive text-destructive-foreground" };
+const badge = { "en attente": "bg-secondary", "acceptée": "bg-accent text-accent-foreground", "refusée": "bg-destructive text-destructive-foreground", "annulée": "bg-muted text-muted-foreground line-through" };
 
 export function RequestCard({ r, listing, host, actions }: { r: BookingRequest; listing?: Listing | undefined; host?: boolean; actions?: ReactNode }) {
   return (
