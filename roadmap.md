@@ -7,3 +7,4 @@
 - [x] Publication d’annonces : photos, tarifs, disponibilités, règles canines
 - [x] Afficher les annonces publiées dans la recherche et les fiches
 - [x] Demandes reliées à l’espace hôte, statut en direct côté voyageur
+- [x] Annulation d’une demande en attente par le voyageur
