@@ -27,6 +27,8 @@ export type Database = {
           listing_name: string
           message: string
           nights: number
+          payment_intent_id: string | null
+          payment_status: string
           status: string
           subtotal: number
           traveler_id: string
@@ -44,6 +46,8 @@ export type Database = {
           listing_name?: string
           message?: string
           nights?: number
+          payment_intent_id?: string | null
+          payment_status?: string
           status?: string
           subtotal?: number
           traveler_id?: string
@@ -61,6 +65,8 @@ export type Database = {
           listing_name?: string
           message?: string
           nights?: number
+          payment_intent_id?: string | null
+          payment_status?: string
           status?: string
           subtotal?: number
           traveler_id?: string
