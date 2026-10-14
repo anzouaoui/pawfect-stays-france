@@ -6,7 +6,7 @@ async function stripe(path: string, body?: Record<string, string>) {
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method: body ? "POST" : "GET",
     headers: { Authorization: `Bearer ${process.env["STRIPE_SECRET_KEY"]}`, "Content-Type": "application/x-www-form-urlencoded" },
-    body: body ? new URLSearchParams(body).toString() : undefined,
+    body: body ? new URLSearchParams(body).toString() : null,
   });
   const json = (await res.json()) as { id: string; status: string; client_secret: string; error?: { message: string } };
   if (!res.ok) { console.error("Stripe error", json.error?.message); throw new Error("Erreur de paiement"); }
