@@ -6,7 +6,9 @@ import { Bath, Bed, Check, Dog, Fence, PawPrint, ShieldCheck, Waves } from "luci
 import { Button } from "@/components/ui/button";
 import { ListingGallery } from "@/components/ListingGallery";
 import { getPublishedListing, isAvailable } from "@/lib/public-listings.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { confirmHold, createBookingWithHold } from "@/lib/payments.functions";
+import { CardHoldForm } from "@/components/CardHoldForm";
 import { useSessionUser } from "@/lib/booking-requests";
 import { toast } from "sonner";
 
@@ -51,17 +53,19 @@ function Detail() {
 
   const user = useSessionUser();
   const [busy, setBusy] = useState(false);
+  const [hold, setHold] = useState<{ bookingId: string; clientSecret: string } | null>(null);
+  const createHold = useServerFn(createBookingWithHold);
+  const confirm = useServerFn(confirmHold);
   const submit = async () => {
     if (h) {
       setBusy(true);
-      const { error } = await supabase.from("booking_requests").insert({
-        listing_id: l.id, host_id: "00000000-0000-0000-0000-000000000000", check_in: inD, check_out: outD,
-        dogs: chosen.map(({ id, name, breed, size, weight, behavior }) => ({ id, name, breed, size, weight, behavior })),
-        message: msg.trim(),
-      });
+      try {
+        setHold(await createHold({ data: {
+          listingId: l.id, checkIn: inD, checkOut: outD, message: msg.trim(),
+          dogs: chosen.map(({ id, name, breed, size, weight, behavior }) => ({ id, name, breed, size, weight: Number(weight) || 0, behavior: behavior ?? "" })),
+        } }));
+      } catch (e) { toast.error((e as Error).message || "La demande n’a pas pu être envoyée."); }
       setBusy(false);
-      if (error) { toast.error(error.message.includes("propre logement") ? "Vous ne pouvez pas réserver votre propre logement." : "La demande n’a pas pu être envoyée. Vérifiez les dates et vos chiens."); return; }
-      setSent(true);
       return;
     }
     setReqs([{ id: uid(), listingId: l.id, checkIn: inD, checkOut: outD, nights, dogIds: sel, dogs: chosen, message: msg, listingName: l.name, subtotal, fee, status: "en attente", createdAt: new Date().toISOString() }, ...reqs]);
@@ -113,6 +117,8 @@ function Detail() {
           </div>}
           {sent ? (
             <div className="mt-4 rounded-xl bg-accent/20 p-4 text-sm">Demande envoyée ! {l.host} va vérifier que son logement convient à votre chien. Vous ne serez débité qu'après acceptation. <Link to="/mes-demandes" className="font-semibold underline">Suivre mes demandes</Link></div>
+          ) : hold ? (
+            <CardHoldForm clientSecret={hold.clientSecret} total={subtotal + fee} onDone={async () => { await confirm({ data: { bookingId: hold.bookingId } }); setSent(true); }} />
           ) : (<>
             <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
               <label>Arrivée<input type="date" min={h?.availableFrom} max={h?.availableTo} value={inD} onChange={(e) => setIn(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-2 py-2" /></label>

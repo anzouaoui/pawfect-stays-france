@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { LISTINGS } from "@/lib/data";
 import { useRequests, type BookingRequest } from "@/lib/store";
 import { RequestCard } from "@/components/RequestCard";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { decideBooking } from "@/lib/payments.functions";
 import { toRequest, useLiveRequests, useSessionUser } from "@/lib/booking-requests";
 
 export const Route = createFileRoute("/hote")({
@@ -43,10 +44,13 @@ function Host() {
   const all = [...live, ...local.map((r) => ({ ...r, live: false as const }))];
   const list = all.filter((r) => r.status === tab);
 
+  const decideFn = useServerFn(decideBooking);
   const decide = async (r: (typeof all)[number], status: "acceptée" | "refusée") => {
     if (!r.live) { setLocal(local.map((x) => (x.id === r.id ? { ...x, status } : x))); return; }
-    const { error } = await supabase.from("booking_requests").update({ status }).eq("id", r.id);
-    if (error) toast.error("Mise à jour impossible."); else toast.success(status === "acceptée" ? "Demande acceptée" : "Demande refusée");
+    try {
+      await decideFn({ data: { bookingId: r.id, action: status } });
+      toast.success(status === "acceptée" ? "Demande acceptée, paiement encaissé" : "Demande refusée, empreinte libérée");
+    } catch (e) { toast.error((e as Error).message || "Mise à jour impossible."); }
   };
 
   return (
