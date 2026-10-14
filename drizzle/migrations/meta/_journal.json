@@ -22,6 +22,20 @@
       "when": 1791899043635,
       "tag": "0002_booking_cancel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791990416935,
+      "tag": "0003_booking_payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791990430974,
+      "tag": "0004_booking_payments_insert_guard",
+      "breakpoints": true
     }
   ]
 }

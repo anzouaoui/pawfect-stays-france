@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { LISTINGS } from "@/lib/data";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { decideBooking } from "@/lib/payments.functions";
 import { useRequests, type BookingRequest } from "@/lib/store";
 import { RequestCard } from "@/components/RequestCard";
 import { toRequest, useLiveRequests, useSessionUser } from "@/lib/booking-requests";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/mes-demandes")({
 function Mine() {
   const [local, setLocal] = useRequests();
   const [busy, setBusy] = useState<string | null>(null);
+  const decideFn = useServerFn(decideBooking);
   const cancel = async (r: BookingRequest, isLive: boolean) => {
     if (!window.confirm("Annuler cette demande ? L’hôte en sera informé immédiatement.")) return;
     const name = r.listingName ?? LISTINGS.find((l) => l.id === r.listingId)?.name ?? "ce logement";
@@ -33,10 +35,11 @@ function Mine() {
       return;
     }
     setBusy(r.id);
-    const { error } = await supabase.from("booking_requests").update({ status: "annulée" }).eq("id", r.id);
+    try {
+      await decideFn({ data: { bookingId: r.id, action: "annulée" } });
+      toast.success("Demande annulée", { description: `${name} — du ${r.checkIn} au ${r.checkOut}. L’empreinte bancaire est libérée et l’hôte a été informé.` });
+    } catch { toast.error("Annulation impossible : la demande a peut-être déjà été traitée."); }
     setBusy(null);
-    if (error) toast.error("Annulation impossible : la demande a peut-être déjà été traitée.");
-    else toast.success("Demande annulée", { description: `${name} — du ${r.checkIn} au ${r.checkOut}. L’hôte a été informé immédiatement.` });
   };
   const cancelBtn = (r: BookingRequest, isLive: boolean) => r.status === "en attente" && (
     <button disabled={busy === r.id} onClick={() => cancel(r, isLive)} className="mt-4 rounded-xl border px-4 py-2 text-sm hover:border-destructive hover:text-destructive disabled:opacity-50">{busy === r.id ? "Annulation…" : "Annuler la demande"}</button>
