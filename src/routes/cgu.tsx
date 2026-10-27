@@ -73,7 +73,7 @@ function Cgu() {
 
       <h2>11. Éditeur du site et contact</h2>
       <ul>
-        <li>PetInn est édité et exploité par Anouk Zouaoui (entrepreneur individuel), SIRET 98228665000022.</li>
+        <li>PetInn est édité et exploité par Anouk Zouaoui, SIRET 98228665000022 (SIREN 982286650).</li>
         <li>Contact et service client : bricapattes@gmail.com.</li>
       </ul>
     </LegalPage>
