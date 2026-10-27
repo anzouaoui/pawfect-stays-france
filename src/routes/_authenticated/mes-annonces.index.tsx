@@ -55,7 +55,7 @@ function MyListings() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => supabase.auth.signOut()}>Se déconnecter</Button>
-          <Button asChild><Link to="/mes-annonces/nouvelle">Ajouter un logement</Link></Button>
+          <Button asChild><Link to="/mes-annonces/nouvelle" search={{}}>Ajouter un logement</Link></Button>
         </div>
       </div>
       <div className="mt-8 space-y-4">
@@ -65,12 +65,14 @@ function MyListings() {
           <div key={l.id} className="flex flex-col gap-4 rounded-2xl border bg-card p-4 sm:flex-row">
             {l.cover ? <img src={l.cover} alt={l.name} className="h-32 w-full rounded-xl object-cover sm:w-44" /> : <div className="h-32 w-full rounded-xl bg-muted sm:w-44" />}
             <div className="flex-1">
-              <div className="flex items-center gap-2"><h2 className="font-display text-lg font-bold">{l.name}</h2><Badge variant={l.status === "publiée" ? "default" : "secondary"}>{l.status}</Badge></div>
+              <div className="flex items-center gap-2"><h2 className="font-display text-lg font-bold">{l.name || "Brouillon sans titre"}</h2><Badge variant={l.status === "publiée" ? "default" : "secondary"}>{l.status}</Badge></div>
               <p className="text-sm text-muted-foreground">{l.type} · {l.city}{l.region ? `, ${l.region}` : ""}</p>
               <p className="mt-1 text-sm">{Number(l.price_per_night)} €/nuit · +{Number(l.dog_fee_per_night)} €/chien/nuit · {l.photos.length} photo(s) · {l.dog_rules && Array.isArray(l.dog_rules) ? l.dog_rules.length : 0} règle(s)</p>
               <p className="text-sm text-muted-foreground">Disponible du {new Date(l.available_from).toLocaleDateString("fr-FR")} au {new Date(l.available_to).toLocaleDateString("fr-FR")}{l.blocked_dates.length ? ` · ${l.blocked_dates.length} date(s) bloquée(s)` : ""}</p>
               <div className="mt-3 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => toggle(l)}>{l.status === "publiée" ? "Repasser en brouillon" : "Publier"}</Button>
+                {l.status === "publiée"
+                  ? <Button size="sm" variant="outline" onClick={() => toggle(l)}>Repasser en brouillon</Button>
+                  : <Button size="sm" asChild><Link to="/mes-annonces/nouvelle" search={{ id: l.id }}>Continuer l'annonce</Link></Button>}
                 <Button size="sm" variant="ghost" onClick={() => remove(l)}>Supprimer</Button>
               </div>
             </div>
