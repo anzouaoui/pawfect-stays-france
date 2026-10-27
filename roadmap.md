@@ -18,3 +18,4 @@
 - [ ] Compléter les mentions légales : médiateur de la consommation à désigner (raison sociale, adresse et contact renseignés)
 - [ ] Annulation après acceptation (remboursement partiel) : à automatiser
 - [x] Mot de passe oublié : demande par e-mail et réinitialisation sécurisée
+- [x] Menu principal : bouton « Connexion / Inscription », puis profil et déconnexion une fois connecté
