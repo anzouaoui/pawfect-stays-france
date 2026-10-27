@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/sheet";
 
 const NAV_LINKS = [
-  { to: "/recherche", label: "Rechercher", search: { q: "", type: "", from: "", to: "" } },
   { to: "/passeport", label: "Passeport canin" },
   { to: "/mes-demandes", label: "Mes demandes" },
   { to: "/mes-voyages", label: "Mes voyages" },
   { to: "/mes-annonces", label: "Mes annonces" },
   { to: "/hote", label: "Espace hôte" },
 ] as const;
+
+const LINK_CLASS = "rounded-md px-3 py-2.5 hover:bg-accent/10";
 
 /** Mobile navigation drawer (hamburger). Hidden from `sm:` up, where the inline nav links show. */
 export function MobileNav() {
@@ -65,14 +66,22 @@ export function MobileNav() {
           </SheetTitle>
         </SheetHeader>
         <nav className="mt-6 flex flex-col gap-1 text-base">
+          <Link
+            to="/recherche"
+            search={{ q: "", type: "", from: "", to: "" }}
+            onClick={() => setOpen(false)}
+            activeProps={{ className: "font-semibold text-primary" }}
+            className={LINK_CLASS}
+          >
+            Rechercher
+          </Link>
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              search={"search" in link ? link.search : undefined}
               onClick={() => setOpen(false)}
               activeProps={{ className: "font-semibold text-primary" }}
-              className="rounded-md px-3 py-2.5 hover:bg-accent/10"
+              className={LINK_CLASS}
             >
               {link.label}
             </Link>
