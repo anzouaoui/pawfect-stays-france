@@ -56,6 +56,8 @@ export const confirmHold = createServerFn({ method: "POST" })
     const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
     if (pi.status !== "requires_capture") throw new Error("Empreinte bancaire non confirmée");
     await (await admin()).from("booking_requests").update({ payment_status: "autorisé" }).eq("id", row.id);
+    const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
+    await notifyBooking("host-new-request", row);
     return { ok: true };
   });
 
@@ -81,5 +83,9 @@ export const decideBooking = createServerFn({ method: "POST" })
     }
     const { error } = await (await admin()).from("booking_requests").update({ status: data.action, payment_status }).eq("id", row.id);
     if (error) throw new Error("Mise à jour impossible");
+    if (data.action !== "annulée") {
+      const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
+      await notifyBooking(data.action === "acceptée" ? "traveler-accepted" : "traveler-refused", row);
+    }
     return { ok: true };
   });
