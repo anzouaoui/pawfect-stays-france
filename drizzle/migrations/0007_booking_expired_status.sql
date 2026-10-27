@@ -1,0 +1,2 @@
+ALTER TABLE public.booking_requests DROP CONSTRAINT booking_requests_status_check;
+ALTER TABLE public.booking_requests ADD CONSTRAINT booking_requests_status_check CHECK (status IN ('en attente','acceptée','refusée','annulée','expirée'));
