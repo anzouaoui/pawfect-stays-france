@@ -25,7 +25,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 const EMPTY: Form = { name: "", type: "", city: "", region: "", description: "", price: "", dogFee: "0", cleaning: "0", minNights: "1", from: "", to: "", maxDogs: "1", fenced: false };
 
-export function ListingWizard({ userId, draftId }: { userId: string; draftId?: string }) {
+export function ListingWizard({ userId, draftId }: { userId: string; draftId?: string | undefined }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [id, setId] = useState<string | undefined>(draftId);

@@ -78,7 +78,7 @@ function MyListings() {
             </div>
           </div>
         ))}
-        {data && !data.length && <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">Vous n'avez pas encore de logement. <Link to="/mes-annonces/nouvelle" className="underline">Ajoutez le premier</Link>.</div>}
+        {data && !data.length && <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">Vous n'avez pas encore de logement. <Link to="/mes-annonces/nouvelle" search={{}} className="underline">Ajoutez le premier</Link>.</div>}
       </div>
     </div>
   );
