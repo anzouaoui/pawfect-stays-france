@@ -25,6 +25,5 @@ function useLocal<T>(key: string, init: T) {
   return [v, set] as const;
 }
 
-export const useDogs = () => useLocal<Dog[]>("petinn-dogs", []);
 export const useRequests = () => useLocal<BookingRequest[]>("petinn-requests", []);
 export const uid = () => Math.random().toString(36).slice(2, 10);
