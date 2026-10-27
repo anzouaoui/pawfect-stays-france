@@ -82,6 +82,39 @@ export type Database = {
           },
         ]
       }
+      dog_profiles: {
+        Row: {
+          behavior: string
+          breed: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          size: string
+          weight: number
+        }
+        Insert: {
+          behavior?: string
+          breed: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id?: string
+          size: string
+          weight: number
+        }
+        Update: {
+          behavior?: string
+          breed?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          size?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       host_listings: {
         Row: {
           available_from: string

@@ -8,3 +8,6 @@
 - [x] Afficher les annonces publiées dans la recherche et les fiches
 - [x] Demandes reliées à l’espace hôte, statut en direct côté voyageur
 - [x] Annulation d’une demande en attente par le voyageur
+- [x] Passeports canins privés liés au compte voyageur, utilisables dans les réservations
+- [x] Tests de sauvegarde et suppression, politiques de confidentialité et accès connecté vérifiés
+- [ ] Vérifier le parcours complet connecté : aucun compte utilisateur disponible ; attend une inscription et une connexion du voyageur

@@ -1,7 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { LISTINGS, SERVICE_FEE_RATE } from "@/lib/data";
-import { uid, useDogs, useRequests } from "@/lib/store";
+import { uid, useRequests } from "@/lib/store";
+import { useDogs } from "@/lib/dog-profiles";
 import { Bath, Bed, Check, Dog, Fence, PawPrint, ShieldCheck, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingGallery } from "@/components/ListingGallery";
@@ -36,20 +37,20 @@ export const Route = createFileRoute("/hebergement/$id")({
 
 function Detail() {
   const l = Route.useLoaderData();
-  const [dogs] = useDogs();
+  const { dogs, loading: dogsLoading, error: dogsError } = useDogs();
   const [reqs, setReqs] = useRequests();
   const [inD, setIn] = useState(""); const [outD, setOut] = useState("");
   const [sel, setSel] = useState<string[]>([]); const [msg, setMsg] = useState(""); const [sent, setSent] = useState(false);
   const nights = inD && outD ? Math.max(0, Math.round((+new Date(outD) - +new Date(inD)) / 864e5)) : 0;
   const h = l.hosted;
-  const dogFees = h ? nights * h.dogFee * sel.length : 0;
+  const chosen = dogs.filter((d) => sel.includes(d.id));
+  const dogFees = h ? nights * h.dogFee * chosen.length : 0;
   const cleaning = h && nights > 0 ? h.cleaningFee : 0;
   const subtotal = nights * l.price + dogFees + cleaning; const fee = Math.round(subtotal * SERVICE_FEE_RATE);
-  const chosen = dogs.filter((d) => sel.includes(d.id));
   const tooBig = chosen.some((d) => !l.sizes.includes(d.size));
   const tooShort = !!h && nights > 0 && nights < h.minNights;
   const unavailable = nights > 0 && !isAvailable(l, inD, outD);
-  const ok = nights > 0 && !tooShort && !unavailable && chosen.length > 0 && chosen.length <= l.maxDogs && !tooBig;
+  const ok = !dogsLoading && !dogsError && nights > 0 && !tooShort && !unavailable && chosen.length > 0 && chosen.length <= l.maxDogs && !tooBig;
 
   const user = useSessionUser();
   const [busy, setBusy] = useState(false);
@@ -68,7 +69,7 @@ function Detail() {
       setBusy(false);
       return;
     }
-    setReqs([{ id: uid(), listingId: l.id, checkIn: inD, checkOut: outD, nights, dogIds: sel, dogs: chosen, message: msg, listingName: l.name, subtotal, fee, status: "en attente", createdAt: new Date().toISOString() }, ...reqs]);
+    setReqs([{ id: uid(), listingId: l.id, checkIn: inD, checkOut: outD, nights, dogIds: chosen.map((dog) => dog.id), dogs: chosen, message: msg, listingName: l.name, subtotal, fee, status: "en attente", createdAt: new Date().toISOString() }, ...reqs]);
     setSent(true);
   };
 
@@ -125,7 +126,7 @@ function Detail() {
               <label>Départ<input type="date" min={inD || h?.availableFrom} max={h?.availableTo} value={outD} onChange={(e) => setOut(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-2 py-2" /></label>
             </div>
             <p className="mt-4 text-sm font-semibold">Chiens (passeport canin)</p>
-            {dogs.length ? dogs.map((d) => (
+            {dogsLoading ? <p className="mt-1 text-sm text-muted-foreground" role="status">Chargement des passeports…</p> : dogsError ? <p className="mt-1 text-sm text-destructive" role="alert">Impossible de charger vos passeports. <Link to="/passeport" className="underline">Voir mes passeports</Link></p> : dogs.length ? dogs.map((d) => (
               <label key={d.id} className="mt-1 flex items-center gap-2 text-sm"><input type="checkbox" checked={sel.includes(d.id)} onChange={() => setSel(sel.includes(d.id) ? sel.filter((x) => x !== d.id) : [...sel, d.id])} />{d.name} ({d.breed}, {d.size})</label>
             )) : <p className="mt-1 text-sm text-muted-foreground">Aucun passeport. <Link to="/passeport" className="underline">Créer un passeport canin</Link></p>}
             {tooShort && <p className="mt-2 text-sm text-destructive">Séjour minimum : {h?.minNights} nuits.</p>}

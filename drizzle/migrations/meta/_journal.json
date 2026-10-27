@@ -36,6 +36,20 @@
       "when": 1791990430974,
       "tag": "0004_booking_payments_insert_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793089403859,
+      "tag": "0005_create_traveler_dog_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793089512090,
+      "tag": "0006_restrict_dog_profiles_grants",
+      "breakpoints": true
     }
   ]
 }
