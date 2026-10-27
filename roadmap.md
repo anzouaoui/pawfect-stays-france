@@ -11,3 +11,6 @@
 - [x] Passeports canins privés liés au compte voyageur, utilisables dans les réservations
 - [x] Tests de sauvegarde et suppression, politiques de confidentialité et accès connecté vérifiés
 - [ ] Vérifier le parcours complet connecté : aucun compte utilisateur disponible ; attend une inscription et une connexion du voyageur
+- [x] Emails de réservation : modèles et envois préparés (hôte : nouvelle demande ; voyageur : acceptée, refusée, expirée)
+- [ ] Activer l'envoi réel des emails : attend le raccordement du domaine d'envoi
+- [x] Dates bloquées automatiquement à l'acceptation ; demandes sans réponse expirées après 24 h avec libération de l'empreinte

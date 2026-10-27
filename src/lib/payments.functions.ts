@@ -56,6 +56,8 @@ export const confirmHold = createServerFn({ method: "POST" })
     const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
     if (pi.status !== "requires_capture") throw new Error("Empreinte bancaire non confirmée");
     await (await admin()).from("booking_requests").update({ payment_status: "autorisé" }).eq("id", row.id);
+    const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
+    await notifyBooking("host-new-request", row);
     return { ok: true };
   });
 
@@ -74,6 +76,12 @@ export const decideBooking = createServerFn({ method: "POST" })
       if (row.payment_status !== "autorisé" || !row.payment_intent_id) throw new Error("Carte du voyageur non autorisée");
       await stripe(`payment_intents/${row.payment_intent_id}/capture`, {});
       payment_status = "encaissé";
+      // Lock the accepted nights on the listing so no new request can overlap them.
+      const db = await admin();
+      const { data: listing } = await db.from("host_listings").select("blocked_dates").eq("id", row.listing_id).single();
+      const nights: string[] = [];
+      for (let d = new Date(row.check_in); d < new Date(row.check_out); d.setUTCDate(d.getUTCDate() + 1)) nights.push(d.toISOString().slice(0, 10));
+      await db.from("host_listings").update({ blocked_dates: [...new Set([...(listing?.blocked_dates ?? []), ...nights])] }).eq("id", row.listing_id);
     } else if (row.payment_intent_id) {
       const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
       if (pi.status !== "canceled" && pi.status !== "succeeded") await stripe(`payment_intents/${row.payment_intent_id}/cancel`, {});
@@ -81,5 +89,9 @@ export const decideBooking = createServerFn({ method: "POST" })
     }
     const { error } = await (await admin()).from("booking_requests").update({ status: data.action, payment_status }).eq("id", row.id);
     if (error) throw new Error("Mise à jour impossible");
+    if (data.action !== "annulée") {
+      const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
+      await notifyBooking(data.action === "acceptée" ? "traveler-accepted" : "traveler-refused", row);
+    }
     return { ok: true };
   });
