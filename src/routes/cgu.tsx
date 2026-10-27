@@ -66,7 +66,7 @@ function Cgu() {
       <p>PetInn fournit un service d’intermédiation technique. PetInn ne peut être tenu responsable de l’exécution du séjour, de l’état du logement ou du comportement des animaux, sans préjudice des droits dont dispose le consommateur au titre de la loi. PetInn s’efforce d’assurer la disponibilité du site sans pouvoir la garantir en permanence.</p>
 
       <h2>9. Données personnelles</h2>
-      <p>Les données (compte, passeports canins, demandes) sont utilisées pour le fonctionnement du service. Les informations des chiens et les dates sont transmises à l’Hôte concerné par une demande. Chaque utilisateur peut demander l’accès, la rectification ou la suppression de ses données à l’adresse bricapattes@gmail.com.</p>
+      <p>Les données (compte, passeports canins, demandes) sont utilisées pour le fonctionnement du service. Les informations des chiens et les dates sont transmises à l’Hôte concerné par une demande. Chaque utilisateur peut demander l’accès, la rectification ou la suppression de ses données à l’adresse contact@bricapattes.fr.</p>
 
       <h2>10. Droit applicable et litiges</h2>
       <p>Les présentes conditions sont soumises au droit français. En cas de litige, le consommateur peut recourir gratuitement à un médiateur de la consommation avant toute action devant les juridictions compétentes.</p>
@@ -74,7 +74,7 @@ function Cgu() {
       <h2>11. Éditeur du site et contact</h2>
       <ul>
         <li>PetInn est édité et exploité par Anouk Zouaoui, SIRET 98228665000022 (SIREN 982286650).</li>
-        <li>Contact et service client : bricapattes@gmail.com.</li>
+        <li>Contact et service client : contact@bricapattes.fr.</li>
       </ul>
     </LegalPage>
   );

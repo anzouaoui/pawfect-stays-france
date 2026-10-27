@@ -45,7 +45,7 @@ function Annulation() {
       <p>En cas d’événement imprévisible et inévitable empêchant le séjour (catastrophe naturelle, interdiction administrative de déplacement, logement devenu inhabitable), le Voyageur est remboursé intégralement.</p>
 
       <h2>Comment annuler</h2>
-      <p>Une demande en attente s’annule depuis <Link to="/mes-demandes" className="underline">Mes demandes</Link>. Pour un séjour déjà accepté, contactez PetInn à bricapattes@gmail.com (service client, Anouk Zouaoui) ; le remboursement est effectué sur la carte utilisée, sous 14 jours maximum.</p>
+      <p>Une demande en attente s’annule depuis <Link to="/mes-demandes" className="underline">Mes demandes</Link>. Pour un séjour déjà accepté, contactez PetInn à contact@bricapattes.fr (service client, Anouk Zouaoui) ; le remboursement est effectué sur la carte utilisée, sous 14 jours maximum.</p>
       <p>Voir aussi les <Link to="/cgu" className="underline">conditions générales d’utilisation</Link>.</p>
     </LegalPage>
   );
