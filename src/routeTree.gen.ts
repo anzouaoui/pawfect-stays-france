@@ -19,6 +19,7 @@ import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
 import { Route as AuthenticatedMesAnnoncesIndexRouteImport } from './routes/_authenticated/mes-annonces.index'
 import { Route as AuthenticatedMesAnnoncesNouvelleRouteImport } from './routes/_authenticated/mes-annonces.nouvelle'
+import { Route as ApiPublicCronExpireRequestsRouteImport } from './routes/api/public/cron/expire-requests'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,12 @@ const AuthenticatedMesAnnoncesNouvelleRoute =
     path: '/mes-annonces/nouvelle',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicCronExpireRequestsRoute =
+  ApiPublicCronExpireRequestsRouteImport.update({
+    id: '/api/public/cron/expire-requests',
+    path: '/api/public/cron/expire-requests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
+  '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +101,7 @@ export interface FileRoutesByTo {
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces': typeof AuthenticatedMesAnnoncesIndexRoute
+  '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +115,7 @@ export interface FileRoutesById {
   '/hebergement/$id': typeof HebergementIdRoute
   '/_authenticated/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/_authenticated/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
+  '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces/'
+    | '/api/public/cron/expire-requests'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces'
+    | '/api/public/cron/expire-requests'
   id:
     | '__root__'
     | '/'
@@ -142,6 +154,7 @@ export interface FileRouteTypes {
     | '/hebergement/$id'
     | '/_authenticated/mes-annonces/nouvelle'
     | '/_authenticated/mes-annonces/'
+    | '/api/public/cron/expire-requests'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,6 +166,7 @@ export interface RootRouteChildren {
   PasseportRoute: typeof PasseportRoute
   RechercheRoute: typeof RechercheRoute
   HebergementIdRoute: typeof HebergementIdRoute
+  ApiPublicCronExpireRequestsRoute: typeof ApiPublicCronExpireRequestsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -227,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMesAnnoncesNouvelleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/cron/expire-requests': {
+      id: '/api/public/cron/expire-requests'
+      path: '/api/public/cron/expire-requests'
+      fullPath: '/api/public/cron/expire-requests'
+      preLoaderRoute: typeof ApiPublicCronExpireRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -252,6 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   PasseportRoute: PasseportRoute,
   RechercheRoute: RechercheRoute,
   HebergementIdRoute: HebergementIdRoute,
+  ApiPublicCronExpireRequestsRoute: ApiPublicCronExpireRequestsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

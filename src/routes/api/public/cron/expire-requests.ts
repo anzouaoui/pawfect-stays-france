@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 
-/** Expires pending requests older than 6.5 days (before Stripe drops the ~7-day hold), releases the hold and notifies the traveler. */
+/** Expires pending requests older than 24 hours, releases the hold and notifies the traveler. */
 export const Route = createFileRoute("/api/public/cron/expire-requests")({
   server: {
     handlers: {
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/public/cron/expire-requests")({
         if (denied) return denied;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
-        const cutoff = new Date(Date.now() - 6.5 * 864e5).toISOString();
+        const cutoff = new Date(Date.now() - 864e5).toISOString();
         const { data: rows } = await supabaseAdmin.from("booking_requests").select("*").eq("status", "en attente").lt("created_at", cutoff).limit(100);
         let expired = 0;
         for (const row of rows ?? []) {

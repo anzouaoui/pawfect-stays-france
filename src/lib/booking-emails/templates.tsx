@@ -41,7 +41,7 @@ function Layout({ preview, title, children, cta, d }: { preview: string; title: 
 
 export const HostNewRequest = (d: BookingEmailData) => (
   <Layout d={d} preview="Nouvelle demande de réservation" title="Nouvelle demande de réservation" cta="Voir la demande">
-    <Text style={text}>Un voyageur souhaite séjourner chez vous avec son chien. Consultez son passeport canin puis acceptez ou refusez la demande. Sans réponse sous 7 jours, elle expire et l’empreinte bancaire est libérée.</Text>
+    <Text style={text}>Un voyageur souhaite séjourner chez vous avec son chien. Consultez son passeport canin puis acceptez ou refusez la demande. Sans réponse sous 24 heures, elle expire et l’empreinte bancaire est libérée.</Text>
   </Layout>
 );
 
@@ -59,7 +59,7 @@ export const TravelerRefused = (d: BookingEmailData) => (
 
 export const TravelerExpired = (d: BookingEmailData) => (
   <Layout d={d} preview="Votre demande a expiré" title="Demande expirée" cta="Chercher un autre hébergement">
-    <Text style={text}>L’hôte n’a pas répondu dans les 7 jours. Votre demande a expiré et aucun montant n’a été prélevé : l’empreinte bancaire est libérée.</Text>
+    <Text style={text}>L’hôte n’a pas répondu dans les 24 heures. Votre demande a expiré et aucun montant n’a été prélevé : l’empreinte bancaire est libérée.</Text>
   </Layout>
 );
 
