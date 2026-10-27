@@ -16,8 +16,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CguRouteImport } from './routes/cgu'
 import { Route as HoteRouteImport } from './routes/hote'
 import { Route as MesDemandesRouteImport } from './routes/mes-demandes'
+import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as PasseportRouteImport } from './routes/passeport'
 import { Route as RechercheRouteImport } from './routes/recherche'
+import { Route as ReinitialisationRouteImport } from './routes/reinitialisation'
 import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
 import { Route as AuthenticatedMesAnnoncesIndexRouteImport } from './routes/_authenticated/mes-annonces.index'
 import { Route as AuthenticatedMesAnnoncesNouvelleRouteImport } from './routes/_authenticated/mes-annonces.nouvelle'
@@ -57,6 +59,11 @@ const MesDemandesRoute = MesDemandesRouteImport.update({
   path: '/mes-demandes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
+  id: '/mot-de-passe-oublie',
+  path: '/mot-de-passe-oublie',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PasseportRoute = PasseportRouteImport.update({
   id: '/passeport',
   path: '/passeport',
@@ -65,6 +72,11 @@ const PasseportRoute = PasseportRouteImport.update({
 const RechercheRoute = RechercheRouteImport.update({
   id: '/recherche',
   path: '/recherche',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReinitialisationRoute = ReinitialisationRouteImport.update({
+  id: '/reinitialisation',
+  path: '/reinitialisation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HebergementIdRoute = HebergementIdRouteImport.update({
@@ -98,8 +110,10 @@ export interface FileRoutesByFullPath {
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
+  '/reinitialisation': typeof ReinitialisationRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -112,8 +126,10 @@ export interface FileRoutesByTo {
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
+  '/reinitialisation': typeof ReinitialisationRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -128,8 +144,10 @@ export interface FileRoutesById {
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
+  '/reinitialisation': typeof ReinitialisationRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/_authenticated/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/_authenticated/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -144,8 +162,10 @@ export interface FileRouteTypes {
     | '/cgu'
     | '/hote'
     | '/mes-demandes'
+    | '/mot-de-passe-oublie'
     | '/passeport'
     | '/recherche'
+    | '/reinitialisation'
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces/'
@@ -158,8 +178,10 @@ export interface FileRouteTypes {
     | '/cgu'
     | '/hote'
     | '/mes-demandes'
+    | '/mot-de-passe-oublie'
     | '/passeport'
     | '/recherche'
+    | '/reinitialisation'
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces'
@@ -173,8 +195,10 @@ export interface FileRouteTypes {
     | '/cgu'
     | '/hote'
     | '/mes-demandes'
+    | '/mot-de-passe-oublie'
     | '/passeport'
     | '/recherche'
+    | '/reinitialisation'
     | '/hebergement/$id'
     | '/_authenticated/mes-annonces/nouvelle'
     | '/_authenticated/mes-annonces/'
@@ -189,8 +213,10 @@ export interface RootRouteChildren {
   CguRoute: typeof CguRoute
   HoteRoute: typeof HoteRoute
   MesDemandesRoute: typeof MesDemandesRoute
+  MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   PasseportRoute: typeof PasseportRoute
   RechercheRoute: typeof RechercheRoute
+  ReinitialisationRoute: typeof ReinitialisationRoute
   HebergementIdRoute: typeof HebergementIdRoute
   ApiPublicCronExpireRequestsRoute: typeof ApiPublicCronExpireRequestsRoute
 }
@@ -246,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MesDemandesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mot-de-passe-oublie': {
+      id: '/mot-de-passe-oublie'
+      path: '/mot-de-passe-oublie'
+      fullPath: '/mot-de-passe-oublie'
+      preLoaderRoute: typeof MotDePasseOublieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/passeport': {
       id: '/passeport'
       path: '/passeport'
@@ -258,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/recherche'
       fullPath: '/recherche'
       preLoaderRoute: typeof RechercheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reinitialisation': {
+      id: '/reinitialisation'
+      path: '/reinitialisation'
+      fullPath: '/reinitialisation'
+      preLoaderRoute: typeof ReinitialisationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hebergement/$id': {
@@ -312,8 +352,10 @@ const rootRouteChildren: RootRouteChildren = {
   CguRoute: CguRoute,
   HoteRoute: HoteRoute,
   MesDemandesRoute: MesDemandesRoute,
+  MotDePasseOublieRoute: MotDePasseOublieRoute,
   PasseportRoute: PasseportRoute,
   RechercheRoute: RechercheRoute,
+  ReinitialisationRoute: ReinitialisationRoute,
   HebergementIdRoute: HebergementIdRoute,
   ApiPublicCronExpireRequestsRoute: ApiPublicCronExpireRequestsRoute,
 }
