@@ -67,7 +67,7 @@ function MyTrips() {
               <div className="flex items-center gap-2"><Badge variant="secondary">{r.status}</Badge>
                 <Button size="sm" variant="outline" asChild><Link to="/hebergement/$id" params={{ id: r.listing_id }}>Voir le logement</Link></Button></div>
             </div>
-          )) : <p className="text-muted-foreground">Aucun séjour pour le moment. <Link to="/recherche" className="underline">Trouver un logement</Link>.</p>}
+          )) : <p className="text-muted-foreground">Aucun séjour pour le moment. <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} className="underline">Trouver un logement</Link>.</p>}
         </section>
 
         <section className="space-y-3">
