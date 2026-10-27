@@ -5,7 +5,7 @@ export type Dog = { id: string; name: string; breed: string; size: Size; weight:
 export type BookingRequest = {
   id: string; listingId: string; checkIn: string; checkOut: string; nights: number;
   dogIds: string[]; dogs: Dog[]; message: string; listingName?: string; subtotal: number; fee: number;
-  status: "en attente" | "acceptée" | "refusée" | "annulée"; createdAt: string;
+  status: "en attente" | "acceptée" | "refusée" | "annulée" | "expirée"; createdAt: string;
 };
 
 function useLocal<T>(key: string, init: T) {
