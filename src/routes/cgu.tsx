@@ -74,6 +74,7 @@ function Cgu() {
       <h2>11. Éditeur du site et contact</h2>
       <ul>
         <li>PetInn est édité et exploité par Anouk Zouaoui, SIRET 98228665000022 (SIREN 982286650).</li>
+        <li>Siège social : 9 Place de la Piscine, 95300 Pontoise, France.</li>
         <li>Contact et service client : contact@bricapattes.fr.</li>
       </ul>
     </LegalPage>
