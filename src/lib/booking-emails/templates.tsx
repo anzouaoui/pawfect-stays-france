@@ -1,7 +1,7 @@
 import { Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text } from "@react-email/components";
 
 export type BookingEmailData = {
-  recipientName?: string;
+  recipientName?: string | undefined;
   listingName?: string;
   checkIn?: string;
   checkOut?: string;
