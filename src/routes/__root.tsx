@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { AccountMenu } from "@/components/AccountMenu";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -139,6 +140,7 @@ function RootComponent() {
           <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
           <Link to="/mes-voyages" activeProps={{ className: "font-semibold" }}>Mes voyages</Link>
           <Link to="/mes-annonces" activeProps={{ className: "font-semibold" }}>Mes annonces</Link>
+          <Link to="/hote" activeProps={{ className: "font-semibold" }}>Espace hôte</Link>
           <AccountMenu />
         </nav>
       </header>
