@@ -57,6 +57,13 @@
       "when": 1793090393485,
       "tag": "0007_booking_expired_status",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793100206754,
+      "tag": "0008_user_roles_signup",
+      "breakpoints": true
     }
   ]
 }
