@@ -156,8 +156,8 @@ function Detail() {
             {tooBig && <p className="mt-2 text-sm text-destructive">Ce gabarit n'est pas accepté ici.</p>}
             {chosen.length > l.maxDogs && <p className="mt-2 text-sm text-destructive">Maximum {l.maxDogs} chien(s).</p>}
             <textarea value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 500))} placeholder="Un mot pour l'hôte (optionnel)" className="mt-3 w-full rounded-lg border bg-background px-3 py-2 text-sm" rows={3} />
-            {nights > 0 && <div className="mt-3 space-y-1 border-t pt-3 text-sm">
-              <div className="flex justify-between"><span>{l.price} € × {nights} nuit{nights > 1 ? "s" : ""}</span><span>{subtotal} €</span></div>
+            {nights > 0 && <div className="mt-3 space-y-1 border-t pt-3 text-sm"><p className="font-semibold">Prix total estimé</p>
+              <div className="flex justify-between"><span>{l.price} € × {nights} nuit{nights > 1 ? "s" : ""}</span><span>{nights * l.price} €</span></div>
               {dogFees > 0 && <div className="flex justify-between"><span>Supplément chiens</span><span>{dogFees} €</span></div>}
               {cleaning > 0 && <div className="flex justify-between"><span>Frais de ménage</span><span>{cleaning} €</span></div>}
               <div className="flex justify-between"><span>Frais de service PetInn ({SERVICE_FEE_RATE * 100}%)</span><span>{fee} €</span></div>
