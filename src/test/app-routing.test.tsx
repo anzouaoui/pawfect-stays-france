@@ -14,4 +14,14 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it("matches pages for the password reset routes", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    for (const path of ["/mot-de-passe-oublie", "/reinitialisation"]) {
+      const matches = router.matchRoutes(path);
+
+      expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
+    }
+  });
 });
