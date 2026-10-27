@@ -12,6 +12,9 @@ import { confirmHold, createBookingWithHold } from "@/lib/payments.functions";
 import { CardHoldForm } from "@/components/CardHoldForm";
 import { useSessionUser } from "@/lib/booking-requests";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, max as maxDate } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export const Route = createFileRoute("/hebergement/$id")({
   loader: async ({ params }) => {
@@ -121,9 +124,28 @@ function Detail() {
           ) : hold ? (
             <CardHoldForm clientSecret={hold.clientSecret} total={subtotal + fee} onDone={async () => { await confirm({ data: { bookingId: hold.bookingId } }); setSent(true); }} />
           ) : (<>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-              <label>Arrivée<input type="date" min={h?.availableFrom} max={h?.availableTo} value={inD} onChange={(e) => setIn(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-2 py-2" /></label>
-              <label>Départ<input type="date" min={inD || h?.availableFrom} max={h?.availableTo} value={outD} onChange={(e) => setOut(e.target.value)} className="mt-1 w-full rounded-lg border bg-background px-2 py-2" /></label>
+            <div className="mt-4">
+              <p className="text-sm font-semibold">Disponibilités</p>
+              <Calendar
+                mode="range"
+                locale={fr}
+                weekStartsOn={1}
+                numberOfMonths={1}
+                defaultMonth={inD ? parseISO(inD) : h ? maxDate([new Date(), parseISO(h.availableFrom)]) : new Date()}
+                selected={{ from: inD ? parseISO(inD) : undefined, to: outD ? parseISO(outD) : undefined }}
+                onSelect={(r) => { setIn(r?.from ? format(r.from, "yyyy-MM-dd") : ""); setOut(r?.to && r.from && +r.to !== +r.from ? format(r.to, "yyyy-MM-dd") : ""); }}
+                disabled={(d) => {
+                  const s = format(d, "yyyy-MM-dd");
+                  if (s < format(new Date(), "yyyy-MM-dd")) return true;
+                  if (!h) return false;
+                  return s < h.availableFrom || s > h.availableTo || h.blockedDates.includes(s);
+                }}
+                className="pointer-events-auto mx-auto mt-2 rounded-lg border p-3"
+              />
+              <p className="mt-2 text-sm text-muted-foreground">
+                {inD && outD ? `Du ${format(parseISO(inD), "d MMM", { locale: fr })} au ${format(parseISO(outD), "d MMM yyyy", { locale: fr })} · ${nights} nuit${nights > 1 ? "s" : ""}` : inD ? "Choisissez la date de départ." : "Choisissez la date d’arrivée."}
+                {(inD || outD) && <button type="button" onClick={() => { setIn(""); setOut(""); }} className="ml-2 underline">Effacer</button>}
+              </p>
             </div>
             <p className="mt-4 text-sm font-semibold">Chiens (passeport canin)</p>
             {dogsLoading ? <p className="mt-1 text-sm text-muted-foreground" role="status">Chargement des passeports…</p> : dogsError ? <p className="mt-1 text-sm text-destructive" role="alert">Impossible de charger vos passeports. <Link to="/passeport" className="underline">Voir mes passeports</Link></p> : dogs.length ? dogs.map((d) => (
@@ -134,8 +156,8 @@ function Detail() {
             {tooBig && <p className="mt-2 text-sm text-destructive">Ce gabarit n'est pas accepté ici.</p>}
             {chosen.length > l.maxDogs && <p className="mt-2 text-sm text-destructive">Maximum {l.maxDogs} chien(s).</p>}
             <textarea value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 500))} placeholder="Un mot pour l'hôte (optionnel)" className="mt-3 w-full rounded-lg border bg-background px-3 py-2 text-sm" rows={3} />
-            {nights > 0 && <div className="mt-3 space-y-1 border-t pt-3 text-sm">
-              <div className="flex justify-between"><span>{l.price} € × {nights} nuit{nights > 1 ? "s" : ""}</span><span>{subtotal} €</span></div>
+            {nights > 0 && <div className="mt-3 space-y-1 border-t pt-3 text-sm"><p className="font-semibold">Prix total estimé</p>
+              <div className="flex justify-between"><span>{l.price} € × {nights} nuit{nights > 1 ? "s" : ""}</span><span>{nights * l.price} €</span></div>
               {dogFees > 0 && <div className="flex justify-between"><span>Supplément chiens</span><span>{dogFees} €</span></div>}
               {cleaning > 0 && <div className="flex justify-between"><span>Frais de ménage</span><span>{cleaning} €</span></div>}
               <div className="flex justify-between"><span>Frais de service PetInn ({SERVICE_FEE_RATE * 100}%)</span><span>{fee} €</span></div>
