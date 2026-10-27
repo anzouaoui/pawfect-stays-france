@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AnnulationRouteImport } from './routes/annulation'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CguRouteImport } from './routes/cgu'
 import { Route as HoteRouteImport } from './routes/hote'
 import { Route as MesDemandesRouteImport } from './routes/mes-demandes'
 import { Route as PasseportRouteImport } from './routes/passeport'
@@ -30,9 +32,19 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnnulationRoute = AnnulationRouteImport.update({
+  id: '/annulation',
+  path: '/annulation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CguRoute = CguRouteImport.update({
+  id: '/cgu',
+  path: '/cgu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HoteRoute = HoteRouteImport.update({
@@ -81,7 +93,9 @@ const ApiPublicCronExpireRequestsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/annulation': typeof AnnulationRoute
   '/auth': typeof AuthRoute
+  '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/passeport': typeof PasseportRoute
@@ -93,7 +107,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/annulation': typeof AnnulationRoute
   '/auth': typeof AuthRoute
+  '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/passeport': typeof PasseportRoute
@@ -107,7 +123,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/annulation': typeof AnnulationRoute
   '/auth': typeof AuthRoute
+  '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/passeport': typeof PasseportRoute
@@ -121,7 +139,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/annulation'
     | '/auth'
+    | '/cgu'
     | '/hote'
     | '/mes-demandes'
     | '/passeport'
@@ -133,7 +153,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/annulation'
     | '/auth'
+    | '/cgu'
     | '/hote'
     | '/mes-demandes'
     | '/passeport'
@@ -146,7 +168,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/annulation'
     | '/auth'
+    | '/cgu'
     | '/hote'
     | '/mes-demandes'
     | '/passeport'
@@ -160,7 +184,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AnnulationRoute: typeof AnnulationRoute
   AuthRoute: typeof AuthRoute
+  CguRoute: typeof CguRoute
   HoteRoute: typeof HoteRoute
   MesDemandesRoute: typeof MesDemandesRoute
   PasseportRoute: typeof PasseportRoute
@@ -185,11 +211,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/annulation': {
+      id: '/annulation'
+      path: '/annulation'
+      fullPath: '/annulation'
+      preLoaderRoute: typeof AnnulationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cgu': {
+      id: '/cgu'
+      path: '/cgu'
+      fullPath: '/cgu'
+      preLoaderRoute: typeof CguRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hote': {
@@ -267,7 +307,9 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AnnulationRoute: AnnulationRoute,
   AuthRoute: AuthRoute,
+  CguRoute: CguRoute,
   HoteRoute: HoteRoute,
   MesDemandesRoute: MesDemandesRoute,
   PasseportRoute: PasseportRoute,

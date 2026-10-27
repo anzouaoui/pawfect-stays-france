@@ -142,7 +142,7 @@ function RootComponent() {
         </nav>
       </header>
       <main><Outlet /></main>
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© PetInn — Voyager avec son chien en France</footer>
+      <footer className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t py-8 text-center text-sm text-muted-foreground"><span>© PetInn — Voyager avec son chien en France</span><Link to="/cgu" className="underline">Conditions générales d’utilisation</Link><Link to="/annulation" className="underline">Politique d’annulation</Link></footer>
       <Toaster />
     </QueryClientProvider>
   );

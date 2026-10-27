@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { LISTINGS, TYPES } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { publishedListingsQuery } from "@/lib/public-listings.functions";
+import { TYPES } from "@/lib/data";
 import { ListingCard } from "@/components/ListingCard";
 
 export const Route = createFileRoute("/")({
@@ -14,11 +16,14 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: ({ context }) => { context.queryClient.prefetchQuery(publishedListingsQuery()); },
   component: Home,
 });
 
 function Home() {
   const nav = useNavigate();
+  const { data: live, isLoading } = useQuery(publishedListingsQuery());
+  const listings = (live?.listings ?? []).slice(0, 6);
   const [q, setQ] = useState("");
   const [type, setType] = useState("");
   const [from, setFrom] = useState(""); const [to, setTo] = useState("");
@@ -49,8 +54,9 @@ function Home() {
         ))}
       </section>
       <section className="mx-auto max-w-6xl px-4 pb-20">
-        <h2 className="font-display text-3xl font-bold">Coups de cœur</h2>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{LISTINGS.map((l) => <ListingCard key={l.id} l={l} />)}</div>
+        <h2 className="font-display text-3xl font-bold">Derniers logements publiés</h2>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{listings.map((l) => <ListingCard key={l.id} l={l} />)}</div>
+        {!isLoading && !listings.length && <p className="mt-6 rounded-2xl border border-dashed p-10 text-center text-muted-foreground">Les premiers logements arrivent bientôt. Vous êtes hôte ? Publiez le vôtre depuis « Mes annonces ».</p>}
       </section>
     </div>
   );
