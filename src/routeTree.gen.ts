@@ -20,6 +20,7 @@ import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oubl
 import { Route as PasseportRouteImport } from './routes/passeport'
 import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ReinitialisationRouteImport } from './routes/reinitialisation'
+import { Route as AuthenticatedMesVoyagesRouteImport } from './routes/_authenticated/mes-voyages'
 import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
 import { Route as AuthenticatedMesAnnoncesIndexRouteImport } from './routes/_authenticated/mes-annonces.index'
 import { Route as AuthenticatedMesAnnoncesNouvelleRouteImport } from './routes/_authenticated/mes-annonces.nouvelle'
@@ -79,6 +80,11 @@ const ReinitialisationRoute = ReinitialisationRouteImport.update({
   path: '/reinitialisation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMesVoyagesRoute = AuthenticatedMesVoyagesRouteImport.update({
+  id: '/mes-voyages',
+  path: '/mes-voyages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const HebergementIdRoute = HebergementIdRouteImport.update({
   id: '/hebergement/$id',
   path: '/hebergement/$id',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/reinitialisation': typeof ReinitialisationRoute
+  '/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/reinitialisation': typeof ReinitialisationRoute
+  '/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/passeport': typeof PasseportRoute
   '/recherche': typeof RechercheRoute
   '/reinitialisation': typeof ReinitialisationRoute
+  '/_authenticated/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
   '/_authenticated/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/_authenticated/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/reinitialisation'
+    | '/mes-voyages'
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces/'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/reinitialisation'
+    | '/mes-voyages'
     | '/hebergement/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/passeport'
     | '/recherche'
     | '/reinitialisation'
+    | '/_authenticated/mes-voyages'
     | '/hebergement/$id'
     | '/_authenticated/mes-annonces/nouvelle'
     | '/_authenticated/mes-annonces/'
@@ -300,6 +312,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReinitialisationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/mes-voyages': {
+      id: '/_authenticated/mes-voyages'
+      path: '/mes-voyages'
+      fullPath: '/mes-voyages'
+      preLoaderRoute: typeof AuthenticatedMesVoyagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/hebergement/$id': {
       id: '/hebergement/$id'
       path: '/hebergement/$id'
@@ -332,11 +351,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMesVoyagesRoute: typeof AuthenticatedMesVoyagesRoute
   AuthenticatedMesAnnoncesNouvelleRoute: typeof AuthenticatedMesAnnoncesNouvelleRoute
   AuthenticatedMesAnnoncesIndexRoute: typeof AuthenticatedMesAnnoncesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMesVoyagesRoute: AuthenticatedMesVoyagesRoute,
   AuthenticatedMesAnnoncesNouvelleRoute: AuthenticatedMesAnnoncesNouvelleRoute,
   AuthenticatedMesAnnoncesIndexRoute: AuthenticatedMesAnnoncesIndexRoute,
 }
