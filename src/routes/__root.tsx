@@ -137,6 +137,7 @@ function RootComponent() {
           <Link to="/recherche" search={{ q: "", type: "", from: "", to: "" }} activeProps={{ className: "font-semibold" }}>Rechercher</Link>
           <Link to="/passeport" activeProps={{ className: "font-semibold" }}>Passeport canin</Link>
           <Link to="/mes-demandes" activeProps={{ className: "font-semibold" }}>Mes demandes</Link>
+          <Link to="/mes-voyages" activeProps={{ className: "font-semibold" }}>Mes voyages</Link>
           <Link to="/mes-annonces" activeProps={{ className: "font-semibold" }}>Mes annonces</Link>
           <Link to="/hote" className="rounded-full bg-primary px-4 py-1.5 text-primary-foreground">Espace hôte</Link>
         </nav>
