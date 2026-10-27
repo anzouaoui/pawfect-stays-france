@@ -14,3 +14,6 @@
 - [x] Emails de réservation : modèles et envois préparés (hôte : nouvelle demande ; voyageur : acceptée, refusée, expirée)
 - [ ] Activer l'envoi réel des emails : attend le raccordement du domaine d'envoi
 - [x] Dates bloquées automatiquement à l'acceptation ; demandes sans réponse expirées après 24 h avec libération de l'empreinte
+- [x] CGU, politique d’annulation et retrait des logements d’exemple
+- [ ] Compléter les mentions légales (raison sociale, adresse, contact, médiateur) : attend les informations de PetInn
+- [ ] Annulation après acceptation (remboursement partiel) : à automatiser
