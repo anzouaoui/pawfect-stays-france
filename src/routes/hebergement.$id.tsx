@@ -131,7 +131,7 @@ function Detail() {
                 locale={fr}
                 weekStartsOn={1}
                 numberOfMonths={1}
-                defaultMonth={inD ? parseISO(inD) : h ? maxDate(new Date(), parseISO(h.availableFrom)) : new Date()}
+                defaultMonth={inD ? parseISO(inD) : h ? maxDate([new Date(), parseISO(h.availableFrom)]) : new Date()}
                 selected={{ from: inD ? parseISO(inD) : undefined, to: outD ? parseISO(outD) : undefined }}
                 onSelect={(r) => { setIn(r?.from ? format(r.from, "yyyy-MM-dd") : ""); setOut(r?.to && r.from && +r.to !== +r.from ? format(r.to, "yyyy-MM-dd") : ""); }}
                 disabled={(d) => {
