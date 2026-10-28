@@ -38,6 +38,7 @@ const schema = z.object({ email: z.string().trim().email("Email invalide").max(2
 
 function AuthPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [role, setRole] = useState<AppRole>("voyageur");
   const [email, setEmail] = useState("");
@@ -95,6 +96,7 @@ function AuthPage() {
       if (error || data.user?.id !== user.id) throw new Error("Session expirée");
       const saved = await saveFirstAccountRole(user.id, role);
       localStorage.removeItem(`${SIGNUP_ROLE_KEY}:${user.id}`);
+      queryClient.setQueryData(["account-role", user.id], saved);
       go(saved);
     } catch {
       toast.error("Impossible d’enregistrer votre choix. Réessayez.");
