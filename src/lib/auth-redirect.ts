@@ -7,7 +7,10 @@ export const SIGNUP_ROLE_KEY = "petinn-signup-role";
 export const AUTH_REDIRECT_KEY = "petinn-auth-redirect";
 
 export function safePath(v: unknown): string {
-  return typeof v === "string" && v.startsWith("/") && !v.startsWith("//") ? v : "";
+  if (typeof v !== "string" || !v.startsWith("/") || v.startsWith("//") || /[\\\x00-\x20]/.test(v)) return "";
+  const url = new URL(v, "https://petinn.invalid");
+  if (url.origin !== "https://petinn.invalid" || url.pathname === "/auth") return "";
+  return url.pathname + url.search + url.hash;
 }
 
 /** Where an account lands when no explicit destination was requested. */
