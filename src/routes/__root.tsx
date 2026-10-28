@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AccountMenu } from "@/components/AccountMenu";
 import { MobileNav } from "@/components/MobileNav";
+import { RoleResumeGuard } from "@/components/RoleResumeGuard";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -132,6 +133,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RoleResumeGuard />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center justify-between gap-x-4 px-4 py-3 text-sm">
