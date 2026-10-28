@@ -1,20 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { LISTINGS, SERVICE_FEE_RATE } from "@/lib/data";
-import { uid, useRequests } from "@/lib/store";
-import { useDogs } from "@/lib/dog-profiles";
+import { LISTINGS } from "@/lib/data";
 import { Bath, Bed, Check, Dog, Fence, PawPrint, ShieldCheck, Waves } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingGallery } from "@/components/ListingGallery";
-import { getPublishedListing, isAvailable } from "@/lib/public-listings.functions";
-import { useServerFn } from "@tanstack/react-start";
-import { confirmHold, createBookingWithHold } from "@/lib/payments.functions";
-import { CardHoldForm } from "@/components/CardHoldForm";
-import { useSessionUser } from "@/lib/booking-requests";
-import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO, max as maxDate } from "date-fns";
-import { fr } from "date-fns/locale";
+import { getPublishedListing } from "@/lib/public-listings.functions";
 
 export const Route = createFileRoute("/hebergement/$id")({
   loader: async ({ params }) => {
@@ -48,41 +37,8 @@ export const Route = createFileRoute("/hebergement/$id")({
 
 function Detail() {
   const l = Route.useLoaderData();
-  const { dogs, loading: dogsLoading, error: dogsError } = useDogs();
-  const [reqs, setReqs] = useRequests();
-  const [inD, setIn] = useState(""); const [outD, setOut] = useState("");
-  const [sel, setSel] = useState<string[]>([]); const [msg, setMsg] = useState(""); const [sent, setSent] = useState(false);
-  const nights = inD && outD ? Math.max(0, Math.round((+new Date(outD) - +new Date(inD)) / 864e5)) : 0;
   const h = l.hosted;
-  const chosen = dogs.filter((d) => sel.includes(d.id));
-  const dogFees = h ? nights * h.dogFee * chosen.length : 0;
-  const cleaning = h && nights > 0 ? h.cleaningFee : 0;
-  const subtotal = nights * l.price + dogFees + cleaning; const fee = Math.round(subtotal * SERVICE_FEE_RATE);
-  const tooBig = chosen.some((d) => !l.sizes.includes(d.size));
-  const tooShort = !!h && nights > 0 && nights < h.minNights;
-  const unavailable = nights > 0 && !isAvailable(l, inD, outD);
-  const ok = !dogsLoading && !dogsError && nights > 0 && !tooShort && !unavailable && chosen.length > 0 && chosen.length <= l.maxDogs && !tooBig;
 
-  const user = useSessionUser();
-  const [busy, setBusy] = useState(false);
-  const [hold, setHold] = useState<{ bookingId: string; clientSecret: string } | null>(null);
-  const createHold = useServerFn(createBookingWithHold);
-  const confirm = useServerFn(confirmHold);
-  const submit = async () => {
-    if (h) {
-      setBusy(true);
-      try {
-        setHold(await createHold({ data: {
-          listingId: l.id, checkIn: inD, checkOut: outD, message: msg.trim(),
-          dogs: chosen.map(({ id, name, breed, size, weight, behavior }) => ({ id, name, breed, size, weight: Number(weight) || 0, behavior: behavior ?? "" })),
-        } }));
-      } catch (e) { toast.error((e as Error).message || "La demande n’a pas pu être envoyée."); }
-      setBusy(false);
-      return;
-    }
-    setReqs([{ id: uid(), listingId: l.id, checkIn: inD, checkOut: outD, nights, dogIds: chosen.map((dog) => dog.id), dogs: chosen, message: msg, listingName: l.name, subtotal, fee, status: "en attente", createdAt: new Date().toISOString() }, ...reqs]);
-    setSent(true);
-  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">

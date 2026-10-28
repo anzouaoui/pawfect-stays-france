@@ -22,6 +22,7 @@ import { Route as RechercheRouteImport } from './routes/recherche'
 import { Route as ReinitialisationRouteImport } from './routes/reinitialisation'
 import { Route as AuthenticatedMesVoyagesRouteImport } from './routes/_authenticated/mes-voyages'
 import { Route as HebergementIdRouteImport } from './routes/hebergement.$id'
+import { Route as ReserverIdRouteImport } from './routes/reserver.$id'
 import { Route as AuthenticatedMesAnnoncesIndexRouteImport } from './routes/_authenticated/mes-annonces.index'
 import { Route as AuthenticatedMesAnnoncesNouvelleRouteImport } from './routes/_authenticated/mes-annonces.nouvelle'
 import { Route as ApiPublicCronExpireRequestsRouteImport } from './routes/api/public/cron/expire-requests'
@@ -90,6 +91,11 @@ const HebergementIdRoute = HebergementIdRouteImport.update({
   path: '/hebergement/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReserverIdRoute = ReserverIdRouteImport.update({
+  id: '/reserver/$id',
+  path: '/reserver/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMesAnnoncesIndexRoute =
   AuthenticatedMesAnnoncesIndexRouteImport.update({
     id: '/mes-annonces/',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/reinitialisation': typeof ReinitialisationRoute
   '/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/reserver/$id': typeof ReserverIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
   '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/reinitialisation': typeof ReinitialisationRoute
   '/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/reserver/$id': typeof ReserverIdRoute
   '/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/mes-annonces': typeof AuthenticatedMesAnnoncesIndexRoute
   '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/reinitialisation': typeof ReinitialisationRoute
   '/_authenticated/mes-voyages': typeof AuthenticatedMesVoyagesRoute
   '/hebergement/$id': typeof HebergementIdRoute
+  '/reserver/$id': typeof ReserverIdRoute
   '/_authenticated/mes-annonces/nouvelle': typeof AuthenticatedMesAnnoncesNouvelleRoute
   '/_authenticated/mes-annonces/': typeof AuthenticatedMesAnnoncesIndexRoute
   '/api/public/cron/expire-requests': typeof ApiPublicCronExpireRequestsRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/reinitialisation'
     | '/mes-voyages'
     | '/hebergement/$id'
+    | '/reserver/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces/'
     | '/api/public/cron/expire-requests'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/reinitialisation'
     | '/mes-voyages'
     | '/hebergement/$id'
+    | '/reserver/$id'
     | '/mes-annonces/nouvelle'
     | '/mes-annonces'
     | '/api/public/cron/expire-requests'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/reinitialisation'
     | '/_authenticated/mes-voyages'
     | '/hebergement/$id'
+    | '/reserver/$id'
     | '/_authenticated/mes-annonces/nouvelle'
     | '/_authenticated/mes-annonces/'
     | '/api/public/cron/expire-requests'
@@ -230,6 +242,7 @@ export interface RootRouteChildren {
   RechercheRoute: typeof RechercheRoute
   ReinitialisationRoute: typeof ReinitialisationRoute
   HebergementIdRoute: typeof HebergementIdRoute
+  ReserverIdRoute: typeof ReserverIdRoute
   ApiPublicCronExpireRequestsRoute: typeof ApiPublicCronExpireRequestsRoute
 }
 
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HebergementIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reserver/$id': {
+      id: '/reserver/$id'
+      path: '/reserver/$id'
+      fullPath: '/reserver/$id'
+      preLoaderRoute: typeof ReserverIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/mes-annonces/': {
       id: '/_authenticated/mes-annonces/'
       path: '/mes-annonces'
@@ -378,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   RechercheRoute: RechercheRoute,
   ReinitialisationRoute: ReinitialisationRoute,
   HebergementIdRoute: HebergementIdRoute,
+  ReserverIdRoute: ReserverIdRoute,
   ApiPublicCronExpireRequestsRoute: ApiPublicCronExpireRequestsRoute,
 }
 export const routeTree = rootRouteImport
