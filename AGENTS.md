@@ -15,3 +15,4 @@
 - Host-published listings live in the Cloud `host_listings` table with photos in the private `listing-photos` bucket (owner-folder paths, signed URLs) because public buckets are blocked in this workspace.
 - Booking requests for host-published listings live in Cloud `booking_requests`; a DB trigger assigns the host and computes prices so clients cannot tamper with amounts. Sample-catalogue requests stay in browser storage.
 - Dog passports live in owner-scoped Cloud `dog_profiles` with RLS and account-keyed query caches; legacy device passports require explicit import, and booking dog snapshots stay independent so deleting a passport does not alter past requests.
+- Complete OAuth on the public `/auth` page only after session hydration; read `user_roles` first, insert missing choices without overwriting existing roles, and read back before redirecting. Scope pending email-signup roles to the account ID to prevent cross-account assignment.

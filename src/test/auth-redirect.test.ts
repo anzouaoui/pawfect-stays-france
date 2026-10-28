@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { destinationForRole } from "@/lib/auth-redirect";
+import { destinationForRole, safePath } from "@/lib/auth-redirect";
 
 describe("post-verification redirect by role", () => {
+  it("only preserves safe internal destinations and avoids callback loops", () => {
+    expect(safePath("/mes-annonces?tab=drafts")).toBe("/mes-annonces?tab=drafts");
+    for (const path of ["//evil.example", "/\\evil.example", "https://evil.example", "/auth?redirect=/auth", "/x/../auth", "/\nevil.example"]) {
+      expect(safePath(path)).toBe("");
+    }
+  });
   it("sends hosts to their listings", () => {
     expect(destinationForRole("hote")).toBe("/mes-annonces");
   });

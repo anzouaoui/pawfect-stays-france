@@ -19,3 +19,5 @@
 - [ ] Annulation après acceptation (remboursement partiel) : à automatiser
 - [x] Mot de passe oublié : demande par e-mail et réinitialisation sécurisée
 - [x] Menu principal : bouton « Connexion / Inscription », puis profil et déconnexion une fois connecté
+- [x] Google activé, retour de connexion et choix Voyageur/Hôte enregistrable ; tests automatisés et parcours simulés validés
+- [ ] Vérifier Google de bout en bout avec un vrai compte : attend une première connexion Google dans l’aperçu (aucun utilisateur disponible)
