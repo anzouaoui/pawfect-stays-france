@@ -127,55 +127,8 @@ function Detail() {
             <p>Séjour minimum : {h.minNights} nuit{h.minNights > 1 ? "s" : ""}</p>
             <p>Ouvert du {new Date(h.availableFrom).toLocaleDateString("fr-FR")} au {new Date(h.availableTo).toLocaleDateString("fr-FR")}</p>
           </div>}
-          {sent ? (
-            <div className="mt-4 rounded-xl bg-accent/20 p-4 text-sm">Demande envoyée ! {l.host} va vérifier que son logement convient à votre chien. Vous ne serez débité qu'après acceptation. <Link to="/mes-demandes" className="font-semibold underline">Suivre mes demandes</Link></div>
-          ) : hold ? (
-            <CardHoldForm clientSecret={hold.clientSecret} total={subtotal + fee} onDone={async () => { await confirm({ data: { bookingId: hold.bookingId } }); setSent(true); }} />
-          ) : (<>
-            <div className="mt-4">
-              <p className="text-sm font-semibold">Disponibilités</p>
-              <Calendar
-                mode="range"
-                locale={fr}
-                weekStartsOn={1}
-                numberOfMonths={1}
-                defaultMonth={inD ? parseISO(inD) : h ? maxDate([new Date(), parseISO(h.availableFrom)]) : new Date()}
-                selected={{ from: inD ? parseISO(inD) : undefined, to: outD ? parseISO(outD) : undefined }}
-                onSelect={(r) => { setIn(r?.from ? format(r.from, "yyyy-MM-dd") : ""); setOut(r?.to && r.from && +r.to !== +r.from ? format(r.to, "yyyy-MM-dd") : ""); }}
-                disabled={(d) => {
-                  const s = format(d, "yyyy-MM-dd");
-                  if (s < format(new Date(), "yyyy-MM-dd")) return true;
-                  if (!h) return false;
-                  return s < h.availableFrom || s > h.availableTo || h.blockedDates.includes(s);
-                }}
-                className="pointer-events-auto mx-auto mt-2 rounded-lg border p-3"
-              />
-              <p className="mt-2 text-sm text-muted-foreground">
-                {inD && outD ? `Du ${format(parseISO(inD), "d MMM", { locale: fr })} au ${format(parseISO(outD), "d MMM yyyy", { locale: fr })} · ${nights} nuit${nights > 1 ? "s" : ""}` : inD ? "Choisissez la date de départ." : "Choisissez la date d’arrivée."}
-                {(inD || outD) && <button type="button" onClick={() => { setIn(""); setOut(""); }} className="ml-2 underline">Effacer</button>}
-              </p>
-            </div>
-            <p className="mt-4 text-sm font-semibold">Chiens (passeport canin)</p>
-            {dogsLoading ? <p className="mt-1 text-sm text-muted-foreground" role="status">Chargement des passeports…</p> : dogsError ? <p className="mt-1 text-sm text-destructive" role="alert">Impossible de charger vos passeports. <Link to="/passeport" className="underline">Voir mes passeports</Link></p> : dogs.length ? dogs.map((d) => (
-              <label key={d.id} className="mt-1 flex items-center gap-2 text-sm"><input type="checkbox" checked={sel.includes(d.id)} onChange={() => setSel(sel.includes(d.id) ? sel.filter((x) => x !== d.id) : [...sel, d.id])} />{d.name} ({d.breed}, {d.size})</label>
-            )) : <p className="mt-1 text-sm text-muted-foreground">Aucun passeport. <Link to="/passeport" className="underline">Créer un passeport canin</Link></p>}
-            {tooShort && <p className="mt-2 text-sm text-destructive">Séjour minimum : {h?.minNights} nuits.</p>}
-            {unavailable && <p className="mt-2 text-sm text-destructive">Le logement n’est pas disponible sur ces dates.</p>}
-            {tooBig && <p className="mt-2 text-sm text-destructive">Ce gabarit n'est pas accepté ici.</p>}
-            {chosen.length > l.maxDogs && <p className="mt-2 text-sm text-destructive">Maximum {l.maxDogs} chien(s).</p>}
-            <textarea value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 500))} placeholder="Un mot pour l'hôte (optionnel)" className="mt-3 w-full rounded-lg border bg-background px-3 py-2 text-sm" rows={3} />
-            {nights > 0 && <div className="mt-3 space-y-1 border-t pt-3 text-sm"><p className="font-semibold">Prix total estimé</p>
-              <div className="flex justify-between"><span>{l.price} € × {nights} nuit{nights > 1 ? "s" : ""}</span><span>{nights * l.price} €</span></div>
-              {dogFees > 0 && <div className="flex justify-between"><span>Supplément chiens</span><span>{dogFees} €</span></div>}
-              {cleaning > 0 && <div className="flex justify-between"><span>Frais de ménage</span><span>{cleaning} €</span></div>}
-              <div className="flex justify-between"><span>Frais de service PetInn ({SERVICE_FEE_RATE * 100}%)</span><span>{fee} €</span></div>
-              <div className="flex justify-between font-semibold"><span>Total</span><span>{subtotal + fee} €</span></div>
-            </div>}
-            {h && user === null ? (
-              <Button asChild className="mt-4 h-12 w-full"><Link to="/auth" search={{ redirect: `/hebergement/${l.id}` }}>Se connecter pour envoyer la demande</Link></Button>
-            ) : <Button disabled={!ok || busy} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">{busy ? "Envoi…" : "Envoyer la demande"}</Button>}
-            <p className="mt-2 text-center text-xs text-muted-foreground">L'hôte valide manuellement votre demande.</p>
-          </>)}
+          <Button asChild className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90"><Link to="/reserver/$id" params={{ id: l.id }}>Réserver</Link></Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">Paiement sécurisé · débité seulement après acceptation de l’hôte.</p>
         </aside>
       </div>
     </div>
