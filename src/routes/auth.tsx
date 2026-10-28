@@ -78,6 +78,7 @@ function AuthPage() {
         if (!active) return;
         if (!savedRole) { setStage("role"); return; }
         localStorage.removeItem(key);
+        queryClient.setQueryData(["account-role", user.id], savedRole);
         go(savedRole);
       } catch {
         if (active) setStage("error");
