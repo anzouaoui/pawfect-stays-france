@@ -19,3 +19,4 @@
 - [ ] Annulation après acceptation (remboursement partiel) : à automatiser
 - [x] Mot de passe oublié : demande par e-mail et réinitialisation sécurisée
 - [x] Menu principal : bouton « Connexion / Inscription », puis profil et déconnexion une fois connecté
+- [ ] Finaliser Google : retour de connexion, choix du rôle absent et redirection vérifiés
