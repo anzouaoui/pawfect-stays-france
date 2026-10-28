@@ -21,3 +21,12 @@ export function destinationForRole(role: string | null | undefined): string {
 export function isAppRole(v: unknown): v is AppRole {
   return v === "voyageur" || v === "hote";
 }
+
+/** Screens a signed-in user without a role must be able to reach without being bounced to /auth. */
+const ROLE_CHOICE_EXEMPT_PATHS = ["/auth", "/reinitialisation"];
+
+/** True when a signed-in user who never finished the role choice must be sent back to it. */
+export function shouldResumeRoleChoice(pathname: string, role: string | null | undefined): boolean {
+  if (role !== null) return false;
+  return !ROLE_CHOICE_EXEMPT_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
