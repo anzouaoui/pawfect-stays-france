@@ -33,7 +33,15 @@ export const Route = createFileRoute("/hebergement/$id")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-  } : { meta: [{ title: "Introuvable — PetInn" }, { name: "robots", content: "noindex" }] },
+  } : { meta: [
+    { title: "Hébergement introuvable — PetInn" },
+    { name: "description", content: "Cet hébergement PetInn n’est pas disponible." },
+    { property: "og:title", content: "Hébergement introuvable — PetInn" },
+    { property: "og:description", content: "Cet hébergement PetInn n’est pas disponible." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "robots", content: "noindex" },
+  ] },
   notFoundComponent: () => <p className="p-10 text-center">Hébergement introuvable.</p>,
   component: Detail,
 });
