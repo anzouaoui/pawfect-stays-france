@@ -19,9 +19,19 @@ export function toRequest(r: BookingRow): BookingRequest {
 export function useSessionUser() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
-    return () => data.subscription.unsubscribe();
+    let active = true;
+    let revision = 0;
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      revision += 1;
+      if (active) setUser(s?.user ?? null);
+    });
+    const startedAt = revision;
+    supabase.auth.getUser().then(({ data }) => {
+      if (active && revision === startedAt) setUser(data.user ?? null);
+    }).catch(() => {
+      if (active && revision === startedAt) setUser(null);
+    });
+    return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
   return user;
 }
