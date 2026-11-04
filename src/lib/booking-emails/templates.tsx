@@ -1,19 +1,55 @@
 import { Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text } from "@react-email/components";
 
 export type BookingEmailData = {
+  /** First name of the recipient; omitted → "Bonjour,". */
   recipientName?: string | undefined;
-  listingName?: string;
-  checkIn?: string;
-  checkOut?: string;
-  nights?: number;
-  dogNames?: string;
-  total?: number;
-  url?: string;
+  listingName?: string | undefined;
+  city?: string | undefined;
+  /** ISO dates, "YYYY-MM-DD" (as stored in booking_requests). */
+  checkIn?: string | undefined;
+  checkOut?: string | undefined;
+  nights?: number | undefined;
+  dogNames?: string | undefined;
+  /** Total amount including VAT, in euros. */
+  total?: number | undefined;
+  url?: string | undefined;
 };
 
-const fr = (d?: string) => (d ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "");
+/** "Anouk Zouaoui" → "Anouk"; blank → undefined. */
+export const firstName = (fullName?: string | null) => fullName?.trim().split(/\s+/)[0] || undefined;
+
+/**
+ * "2026-12-01" → "1 décembre 2026". Date-only strings are formatted in UTC so the day never
+ * shifts with the server time zone. Invalid or missing dates return "".
+ */
+export function formatDateFr(value?: string) {
+  if (!value) return "";
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+}
+
+/** 330.5 → "330,50 €"; non-finite → "". */
+export function formatEuros(value?: number) {
+  if (value == null || !Number.isFinite(value)) return "";
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(value);
+}
+
+const isHttpUrl = (url?: string) => !!url && /^https?:\/\//i.test(url);
+
+function stayLine(d: BookingEmailData) {
+  const from = formatDateFr(d.checkIn);
+  const to = formatDateFr(d.checkOut);
+  const nights = d.nights && d.nights > 0 ? `${d.nights} nuit${d.nights > 1 ? "s" : ""}` : "";
+  const dates = from && to ? `Du ${from} au ${to}` : from ? `À partir du ${from}` : "";
+  return [dates, nights].filter(Boolean).join(" · ");
+}
 
 function Layout({ preview, title, children, cta, d }: { preview: string; title: string; children: React.ReactNode; cta: string; d: BookingEmailData }) {
+  const name = d.recipientName?.trim();
+  const greeting = name ? `Bonjour ${name},` : "Bonjour,";
+  const stay = stayLine(d);
+  const total = formatEuros(d.total);
   return (
     <Html lang="fr" dir="ltr">
       <Head />
@@ -22,15 +58,16 @@ function Layout({ preview, title, children, cta, d }: { preview: string; title: 
         <Container style={container}>
           <Text style={brand}>PetInn</Text>
           <Heading style={h1}>{title}</Heading>
-          <Text style={text}>{d.recipientName ? `Bonjour ${d.recipientName},` : "Bonjour,"}</Text>
+          <Text style={text}>{greeting}</Text>
           {children}
           <Section style={box}>
-            <Text style={boxTitle}>{d.listingName ?? "Votre hébergement"}</Text>
-            <Text style={boxLine}>Du {fr(d.checkIn)} au {fr(d.checkOut)}{d.nights ? ` · ${d.nights} nuit${d.nights > 1 ? "s" : ""}` : ""}</Text>
-            {d.dogNames && <Text style={boxLine}>Chien(s) : {d.dogNames}</Text>}
-            {d.total != null && <Text style={boxLine}>Montant : {d.total} €</Text>}
+            <Text style={boxTitle}>{d.listingName?.trim() || "Votre hébergement"}</Text>
+            {d.city?.trim() ? <Text style={boxLine}>{d.city.trim()}</Text> : null}
+            {stay ? <Text style={boxLine}>{stay}</Text> : null}
+            {d.dogNames?.trim() ? <Text style={boxLine}>Chien(s) : {d.dogNames.trim()}</Text> : null}
+            {total ? <Text style={boxLine}>Montant total TTC : {total}</Text> : null}
           </Section>
-          {d.url && <Button href={d.url} style={button}>{cta}</Button>}
+          {isHttpUrl(d.url) ? <Button href={d.url} style={button}>{cta}</Button> : null}
           <Hr style={hr} />
           <Text style={footer}>PetInn — des séjours 100 % pet-friendly en France.</Text>
         </Container>
@@ -80,6 +117,6 @@ const text = { fontSize: "15px", lineHeight: "24px" };
 const box = { border: "1px solid #eadfd6", borderRadius: "12px", padding: "12px 16px", margin: "16px 0" };
 const boxTitle = { fontWeight: 700, fontSize: "16px", margin: "4px 0" };
 const boxLine = { fontSize: "14px", margin: "4px 0", color: "#5c524b" };
-const button = { backgroundColor: "#2f5d46", color: "#ffffff", borderRadius: "10px", padding: "12px 20px", fontWeight: 600, textDecoration: "none" };
+const button = { backgroundColor: "#2f5d46", color: "#ffffff", borderRadius: "10px", padding: "12px 20px", fontWeight: 600, fontSize: "15px", textDecoration: "none", display: "inline-block" };
 const hr = { borderColor: "#eadfd6", margin: "24px 0 12px" };
 const footer = { fontSize: "12px", color: "#8a7f77" };
