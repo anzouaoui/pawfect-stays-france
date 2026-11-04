@@ -16,7 +16,7 @@ Réponse :
 { "expired": 3, "failed": 1, "failures": [{ "id": "<uuid>", "reason": "stripe_400_payment_intent_unexpected_state" }] }
 ```
 
-Un `failed` qui reste non nul d'un passage à l'autre demande une intervention (ex. PaymentIntent déjà capturé : vérifier la demande dans Stripe). Rien n'appelle la route tant qu'aucune planification n'est configurée.
+Un `failed` qui reste non nul d'un passage à l'autre demande une intervention (ex. PaymentIntent déjà capturé : vérifier la demande dans Stripe). Planification gérée active : `expire-booking-requests`, toutes les 15 minutes (`*/15 * * * *`), en-tête Bearer ajouté automatiquement.
 
 ## 1. Secrets requis (Lovable Cloud → Secrets)
 
