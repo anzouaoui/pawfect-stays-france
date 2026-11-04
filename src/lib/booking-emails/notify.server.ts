@@ -1,9 +1,9 @@
 import { render } from "@react-email/render";
 import { BOOKING_EMAILS, type BookingEmailName } from "./templates";
 import type { Tables } from "@/integrations/supabase/types";
+import { resolveSiteUrl } from "@/lib/site-url.server";
 
 type Row = Tables<"booking_requests">;
-const SITE_URL = "https://pawfect-stays-france.lovable.app";
 
 /**
  * Sends one booking notification. Never throws: a mail failure must not block a booking action.
@@ -16,13 +16,15 @@ export async function notifyBooking(name: BookingEmailName, row: Row) {
     const { data } = await supabaseAdmin.auth.admin.getUserById(userId);
     const to = data.user?.email;
     if (!to) return { sent: false, reason: "no_email" as const };
+    const siteUrl = await resolveSiteUrl();
+    const path = name === "host-new-request" ? "/hote" : name === "traveler-accepted" ? "/mes-demandes" : "/recherche";
     const dogs = (Array.isArray(row.dogs) ? row.dogs : []) as { name?: string }[];
     const props = {
       recipientName: (data.user?.user_metadata?.["full_name"] as string | undefined) ?? undefined,
       listingName: row.listing_name, checkIn: row.check_in, checkOut: row.check_out, nights: row.nights,
       dogNames: dogs.map((d) => d.name).filter(Boolean).join(", "),
       total: Number(row.subtotal) + Number(row.fee),
-      url: name === "host-new-request" ? `${SITE_URL}/hote` : name === "traveler-accepted" ? `${SITE_URL}/mes-demandes` : `${SITE_URL}/recherche`,
+      ...(siteUrl ? { url: `${siteUrl}${path}` } : {}),
     };
     const t = BOOKING_EMAILS[name];
     const html = await render(t.component(props));
