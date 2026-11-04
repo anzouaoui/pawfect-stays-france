@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { getSiteUrl } from "@/lib/site-url.functions";
 
 function NotFoundComponent() {
   return (
@@ -79,26 +80,34 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PetInn" },
-      { name: "description", content: "Hébergements 100% pet-friendly en France." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;600&display=swap" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
+  // Public origin: SITE_URL env (custom domain) or the request origin as fallback.
+  loader: () => getSiteUrl(),
+  staleTime: Infinity,
+  head: ({ loaderData, matches }) => {
+    const siteUrl = loaderData?.siteUrl;
+    const path = matches[matches.length - 1]?.pathname ?? "/";
+    const pageUrl = siteUrl ? `${siteUrl}${path === "/" ? "/" : path.replace(/\/+$/, "")}` : undefined;
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: "PetInn" },
+        { name: "description", content: "Hébergements 100% pet-friendly en France." },
+        { property: "og:site_name", content: "PetInn" },
+        { property: "og:locale", content: "fr_FR" },
+        { property: "og:type", content: "website" },
+        ...(pageUrl ? [{ property: "og:url", content: pageUrl }] : []),
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [
+        ...(pageUrl ? [{ rel: "canonical", href: pageUrl }] : []),
+        { rel: "stylesheet", href: appCss },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Sans:wght@400;600&display=swap" },
+        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

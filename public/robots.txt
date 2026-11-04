@@ -1,14 +1,15 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Une seule section "*" : les sections dédiées à un robot (Googlebot…) remplaceraient
+# entièrement celle-ci, et les règles Disallow ne s'appliqueraient plus à ce robot.
 User-agent: *
 Allow: /
+Allow: /recherche
+Allow: /hebergement/
+
+# Espaces privés (compte, réservation, hôte)
+Disallow: /mes-demandes
+Disallow: /mes-voyages
+Disallow: /mes-annonces
+Disallow: /hote
+Disallow: /reserver/
+Disallow: /passeport
+Disallow: /api/
