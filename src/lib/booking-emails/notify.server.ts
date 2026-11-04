@@ -1,5 +1,5 @@
 import { render } from "@react-email/render";
-import { BOOKING_EMAILS, type BookingEmailName } from "./templates";
+import { BOOKING_EMAILS, firstName, type BookingEmailData, type BookingEmailName } from "./templates";
 import { readEmailConfig } from "./email-config.server";
 import { sendEmail, type SendEmailResult } from "./send.server";
 import type { Tables } from "@/integrations/supabase/types";
@@ -10,6 +10,18 @@ type Row = Tables<"booking_requests">;
 export type NotifyResult =
   | { sent: true; id: string; idempotencyKey: string }
   | { sent: false; reason: "no_email" | "not_configured" | "provider_error" | "error"; idempotencyKey?: string };
+
+type AdminClient = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
+
+/** City of a host-published listing; undefined if unknown. A lookup failure never blocks the email. */
+async function listingCity(client: AdminClient, listingId: string): Promise<string | undefined> {
+  try {
+    const { data } = await client.from("host_listings").select("city").eq("id", listingId).maybeSingle();
+    return data?.city?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /** "anouk@example.fr" → "an***@example.fr": enough to debug without logging full addresses. */
 export const maskEmail = (email: string) => email.replace(/^(.{0,2})[^@]*(@.*)$/, "$1***$2");
@@ -33,10 +45,12 @@ export async function notifyBooking(name: BookingEmailName, row: Row): Promise<N
     const siteUrl = await resolveSiteUrl();
     const path = name === "host-new-request" ? "/hote" : name === "traveler-accepted" ? "/mes-demandes" : "/recherche";
     const dogs = (Array.isArray(row.dogs) ? row.dogs : []) as { name?: string }[];
-    const props = {
-      recipientName: (data.user?.user_metadata?.["full_name"] as string | undefined) ?? undefined,
-      listingName: row.listing_name, checkIn: row.check_in, checkOut: row.check_out, nights: row.nights,
-      dogNames: dogs.map((d) => d.name).filter(Boolean).join(", "),
+    const meta = data.user?.user_metadata ?? {};
+    const props: BookingEmailData = {
+      recipientName: firstName((meta["full_name"] ?? meta["name"]) as string | undefined),
+      listingName: row.listing_name, city: await listingCity(supabaseAdmin, row.listing_id),
+      checkIn: row.check_in, checkOut: row.check_out, nights: row.nights,
+      dogNames: dogs.map((d) => d.name?.trim()).filter(Boolean).join(", "),
       total: Number(row.subtotal) + Number(row.fee),
       ...(siteUrl ? { url: `${siteUrl}${path}` } : {}),
     };

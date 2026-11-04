@@ -1,14 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const getUserById = vi.hoisted(() => vi.fn());
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { auth: { admin: { getUserById } } } }));
+const listings = vi.hoisted(() => ({ from: vi.fn(), select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() }));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { auth: { admin: { getUserById } }, from: listings.from },
+}));
 vi.mock("@/lib/site-url.server", () => ({ resolveSiteUrl: async () => "https://petinn.fr" }));
 
 import { notifyBooking, maskEmail } from "@/lib/booking-emails/notify.server";
 import { checkEmailConnection, parseSender, readEmailConfig } from "@/lib/booking-emails/email-config.server";
 
 const row = {
-  id: "req-42", host_id: "host-a", traveler_id: "traveler-a", listing_name: "Gîte des Pins",
+  id: "req-42", listing_id: "listing-1", host_id: "host-a", traveler_id: "traveler-a", listing_name: "Gîte des Pins",
   check_in: "2026-12-01", check_out: "2026-12-04", nights: 3, subtotal: 300, fee: 30,
   dogs: [{ name: "Nala" }], status: "en attente", payment_status: "autorisé",
 } as unknown as Parameters<typeof notifyBooking>[1];
@@ -26,7 +29,11 @@ beforeEach(() => {
   vi.spyOn(console, "info").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
-  getUserById.mockResolvedValue({ data: { user: { email: "anouk@example.fr", user_metadata: { full_name: "Anouk" } } } });
+  getUserById.mockResolvedValue({ data: { user: { email: "anouk@example.fr", user_metadata: { full_name: "Anouk Zouaoui" } } } });
+  listings.from.mockReturnValue(listings);
+  listings.select.mockReturnValue(listings);
+  listings.eq.mockReturnValue(listings);
+  listings.maybeSingle.mockResolvedValue({ data: { city: "Annecy" }, error: null });
 });
 
 afterEach(() => {
@@ -53,7 +60,10 @@ describe("notifyBooking — real sending through Resend", () => {
     });
     expect(body.html).toContain("Gîte des Pins");
     expect(body.html).toContain("https://petinn.fr/mes-demandes");
-    expect(body.text).toContain("Bonjour Anouk");
+    expect(body.text).toContain("Bonjour Anouk,");
+    expect(body.text).toContain("Annecy");
+    expect(listings.from).toHaveBeenCalledWith("host_listings");
+    expect(listings.eq).toHaveBeenCalledWith("id", "listing-1");
     expect(console.info).toHaveBeenCalledWith(expect.stringContaining("msg_abc"));
     expect(console.info).toHaveBeenCalledWith(expect.stringContaining("an***@example.fr"));
   });
@@ -105,6 +115,13 @@ describe("notifyBooking — real sending through Resend", () => {
     const result = await notifyBooking("traveler-accepted", row);
     expect(result).toMatchObject({ sent: false, reason: "provider_error" });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("still sends when the listing city lookup fails", async () => {
+    listings.maybeSingle.mockRejectedValue(new Error("db down"));
+    fetchMock.mockResolvedValue(json(200, { id: "msg_nocity" }));
+    expect(await notifyBooking("traveler-accepted", row)).toMatchObject({ sent: true, id: "msg_nocity" });
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body).text).not.toContain("Annecy");
   });
 
   it("returns no_email without sending when the account has no address", async () => {
