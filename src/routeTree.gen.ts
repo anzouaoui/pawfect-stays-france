@@ -15,6 +15,7 @@ import { Route as AnnulationRouteImport } from './routes/annulation'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CguRouteImport } from './routes/cgu'
 import { Route as HoteRouteImport } from './routes/hote'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as MesDemandesRouteImport } from './routes/mes-demandes'
 import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as PasseportRouteImport } from './routes/passeport'
@@ -54,6 +55,11 @@ const CguRoute = CguRouteImport.update({
 const HoteRoute = HoteRouteImport.update({
   id: '/hote',
   path: '/hote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MesDemandesRoute = MesDemandesRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cgu': typeof CguRoute
   '/hote': typeof HoteRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/mes-demandes': typeof MesDemandesRoute
   '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/passeport': typeof PasseportRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cgu'
     | '/hote'
+    | '/mentions-legales'
     | '/mes-demandes'
     | '/mot-de-passe-oublie'
     | '/passeport'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cgu'
     | '/hote'
+    | '/mentions-legales'
     | '/mes-demandes'
     | '/mot-de-passe-oublie'
     | '/passeport'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cgu'
     | '/hote'
+    | '/mentions-legales'
     | '/mes-demandes'
     | '/mot-de-passe-oublie'
     | '/passeport'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CguRoute: typeof CguRoute
   HoteRoute: typeof HoteRoute
+  MentionsLegalesRoute: typeof MentionsLegalesRoute
   MesDemandesRoute: typeof MesDemandesRoute
   MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   PasseportRoute: typeof PasseportRoute
@@ -288,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/hote'
       fullPath: '/hote'
       preLoaderRoute: typeof HoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mes-demandes': {
@@ -392,6 +412,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CguRoute: CguRoute,
   HoteRoute: HoteRoute,
+  MentionsLegalesRoute: MentionsLegalesRoute,
   MesDemandesRoute: MesDemandesRoute,
   MotDePasseOublieRoute: MotDePasseOublieRoute,
   PasseportRoute: PasseportRoute,
