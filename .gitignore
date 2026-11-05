@@ -30,3 +30,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Listing seed data (real hosts and photos, see docs/seeding-listings.md)
+scripts/seed-listings.json
+scripts/seed-photos/

@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "email:check": "bun scripts/check-email.ts"
+    "email:check": "bun scripts/check-email.ts",
+    "listings:seed": "bun scripts/seed-listings.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"

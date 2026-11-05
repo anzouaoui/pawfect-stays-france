@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { isAvailable, publishedListingsQuery } from "@/lib/public-listings.functions";
+import { publishedListingsQuery } from "@/lib/public-listings.functions";
+import { PRICE_SLIDER_MAX, filterListings } from "@/lib/search";
 import { EQUIPMENT, LISTINGS, TYPES, type Size } from "@/lib/data";
 import { ListingCard } from "@/components/ListingCard";
 
@@ -29,14 +30,11 @@ function Search() {
   const [fenced, setFenced] = useState(false);
   const [size, setSize] = useState<Size | "">("");
   const [eq, setEq] = useState<string[]>([]);
-  const [max, setMax] = useState(300);
+  const [max, setMax] = useState(PRICE_SLIDER_MAX);
 
   const { data: live } = useQuery(publishedListingsQuery());
   const all = [...(live?.listings ?? []), ...LISTINGS];
-  const res = all.filter((l) => isAvailable(l, from, to) &&
-    (!q || `${l.city} ${l.region} ${l.name}`.toLowerCase().includes(q.toLowerCase())) &&
-    (!type || l.type === type) && (!fenced || l.fencedGarden) && (!size || l.sizes.includes(size)) &&
-    eq.every((e) => l.equipment.includes(e)) && l.price <= max);
+  const res = filterListings(all, { q, type, from, to, fencedGarden: fenced, size, equipment: eq, maxPrice: max });
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[260px_1fr]">
@@ -54,7 +52,7 @@ function Search() {
         <div><p className="mb-2 font-semibold">Équipements fournis</p>
           {EQUIPMENT.map((e) => <label key={e} className="flex items-center gap-2 py-0.5"><input type="checkbox" checked={eq.includes(e)} onChange={() => setEq(eq.includes(e) ? eq.filter((x) => x !== e) : [...eq, e])} /> {e}</label>)}
         </div>
-        <div><p className="mb-2 font-semibold">Prix max : {max} € / nuit</p><input type="range" min={40} max={300} value={max} onChange={(e) => setMax(+e.target.value)} className="w-full" /></div>
+        <div><p className="mb-2 font-semibold">Prix max : {max >= PRICE_SLIDER_MAX ? "sans limite" : `${max} € / nuit`}</p><input type="range" min={40} max={PRICE_SLIDER_MAX} step={10} aria-label="Prix maximum par nuit" value={max} onChange={(e) => setMax(+e.target.value)} className="w-full" /></div>
       </aside>
       <div>
         <h1 className="font-display text-2xl font-bold">{res.length} hébergement{res.length > 1 ? "s" : ""} pet-friendly</h1>
