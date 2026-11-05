@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { LEGAL_VERSIONS, legalDate } from "@/lib/legal";
 import { LegalPage, LegalTodo } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/cgu")({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/cgu")({
 
 function Cgu() {
   return (
-    <LegalPage title="Conditions générales d’utilisation" updated="27 octobre 2026">
+    <LegalPage title="Conditions générales d’utilisation" updated={legalDate(LEGAL_VERSIONS.cgu)}>
       <h2>1. Objet</h2>
       <p>PetInn est une plateforme qui met en relation des voyageurs accompagnés de leur chien (« Voyageurs ») et des hébergeurs proposant des logements pet-friendly en France (« Hôtes »). Les présentes conditions encadrent l’utilisation du site par tous ses utilisateurs. PetInn n’est pas l’exploitant des logements ; le contrat de séjour est conclu directement entre le Voyageur et l’Hôte.</p>
 

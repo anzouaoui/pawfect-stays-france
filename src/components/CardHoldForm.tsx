@@ -3,6 +3,7 @@ import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { getStripeKey } from "@/lib/payments.functions";
 import { Button } from "@/components/ui/button";
+import { CARD_HOLD_NOTICE } from "@/components/BookingConsent";
 
 const UNAVAILABLE = "Le service de paiement est momentanément indisponible. Réessayez dans quelques minutes.";
 
@@ -37,7 +38,7 @@ function Inner({ total, onDone }: { total: number; onDone: () => Promise<void> }
       <PaymentElement />
       {err && <p className="text-sm text-destructive">{err}</p>}
       <Button disabled={!stripe || busy} onClick={pay} className="h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">{busy ? "Vérification…" : `Bloquer ${total} € sur ma carte`}</Button>
-      <p className="text-center text-xs text-muted-foreground">Empreinte bancaire uniquement : débit seulement si l’hôte accepte, libérée sinon.</p>
+      <p className="text-center text-xs text-muted-foreground">{CARD_HOLD_NOTICE} Sinon, l’empreinte bancaire est libérée.</p>
     </div>
   );
 }

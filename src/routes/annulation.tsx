@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { LEGAL_VERSIONS, legalDate } from "@/lib/legal";
 import { LegalPage } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/annulation")({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/annulation")({
 
 function Annulation() {
   return (
-    <LegalPage title="Politique d’annulation" updated="27 octobre 2026">
+    <LegalPage title="Politique d’annulation" updated={legalDate(LEGAL_VERSIONS.annulation)}>
       <h2>Avant la réponse de l’Hôte</h2>
       <ul>
         <li><strong>Annulation par le Voyageur :</strong> gratuite depuis « Mes demandes » tant que la demande est en attente. L’empreinte bancaire est libérée immédiatement.</li>
