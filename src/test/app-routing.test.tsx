@@ -24,4 +24,12 @@ describe("App routing", () => {
       expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
     }
   });
+
+  it("matches the legal pages", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    for (const path of ["/cgu", "/annulation", "/mentions-legales"]) {
+      expect(router.matchRoutes(path).at(-1)?.routeId).toBe(path);
+    }
+  });
 });

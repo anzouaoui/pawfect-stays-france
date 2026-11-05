@@ -160,7 +160,7 @@ function RootComponent() {
         </nav>
       </header>
       <main><Outlet /></main>
-      <footer className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t py-8 text-center text-sm text-muted-foreground"><span>© PetInn — Voyager avec son chien en France</span><Link to="/cgu" className="underline">Conditions générales d’utilisation</Link><Link to="/annulation" className="underline">Politique d’annulation</Link></footer>
+      <footer className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t py-8 text-center text-sm text-muted-foreground"><span>© PetInn — Voyager avec son chien en France</span><Link to="/cgu" className="underline">Conditions générales d’utilisation</Link><Link to="/annulation" className="underline">Politique d’annulation</Link><Link to="/mentions-legales" className="underline">Mentions légales</Link></footer>
       <Toaster />
     </QueryClientProvider>
   );
