@@ -54,7 +54,9 @@ describe("Mentions légales page", () => {
     for (const expected of ["responsable du traitement", "Durées de conservation", "droit d’accès", "CNIL", "Stripe Payments Europe"]) {
       expect(text).toContain(expected);
     }
-    expect(screen.getByRole("link", { name: "conditions générales d’utilisation" })).toHaveAttribute("href", "/cgu");
+    const cguLinks = screen.getAllByRole("link", { name: "conditions générales d’utilisation" });
+    expect(cguLinks).toHaveLength(2); // mediation section (6) + related documents (7)
+    for (const link of cguLinks) expect(link).toHaveAttribute("href", "/cgu");
     expect(screen.getByRole("link", { name: "politique d’annulation" })).toHaveAttribute("href", "/annulation");
   });
 

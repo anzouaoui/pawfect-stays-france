@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LegalPage } from "@/components/LegalPage";
+import { LegalPage, LegalTodo } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/cgu")({
   head: () => ({
@@ -68,8 +68,24 @@ function Cgu() {
       <h2>9. Données personnelles</h2>
       <p>Les données (compte, passeports canins, demandes) sont utilisées pour le fonctionnement du service. Les informations des chiens et les dates sont transmises à l’Hôte concerné par une demande. Chaque utilisateur peut demander l’accès, la rectification ou la suppression de ses données à l’adresse contact@bricapattes.fr.</p>
 
-      <h2>10. Droit applicable et litiges</h2>
-      <p>Les présentes conditions sont soumises au droit français. En cas de litige, le consommateur peut recourir gratuitement à un médiateur de la consommation avant toute action devant les juridictions compétentes.</p>
+      <h2>10. Réclamations, médiation et droit applicable</h2>
+      <h3 className="mt-6 font-semibold">Réclamation préalable</h3>
+      <p>Toute réclamation relative à l’utilisation du site ou à une réservation doit d’abord être adressée par écrit à PetInn, à l’adresse <a href="mailto:contact@bricapattes.fr" className="underline">contact@bricapattes.fr</a>, en précisant la réservation concernée. PetInn s’engage à y répondre dans un délai raisonnable.</p>
+
+      <h3 className="mt-6 font-semibold">Médiation de la consommation</h3>
+      <p>Conformément aux articles L. 611-1 et suivants et L. 612-1 et suivants du Code de la consommation, le consommateur a le droit de recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d’un litige qui l’oppose à PetInn et qui n’a pas pu être réglé à l’amiable.</p>
+      <p>Le médiateur ne peut être saisi que si le consommateur a d’abord tenté de résoudre le litige directement auprès de PetInn par une réclamation écrite, et si sa demande est introduite auprès du médiateur dans un délai d’un an à compter de cette réclamation. Le recours à la médiation est facultatif : chaque partie reste libre d’accepter ou de refuser la solution proposée, et de saisir ensuite les juridictions compétentes.</p>
+      <p>PetInn a désigné le médiateur de la consommation suivant :</p>
+      <ul>
+        <li>Entité de médiation : <LegalTodo>nom du médiateur agréé auquel l’éditeur a adhéré</LegalTodo></li>
+        <li>Adresse postale : <LegalTodo>adresse postale du médiateur</LegalTodo></li>
+        <li>E-mail : <LegalTodo>adresse e-mail du médiateur</LegalTodo></li>
+        <li>Site internet : <LegalTodo>site officiel du médiateur (lien)</LegalTodo></li>
+        <li>Saisine en ligne : <LegalTodo>lien direct vers le formulaire de saisine en ligne du médiateur</LegalTodo></li>
+      </ul>
+
+      <h3 className="mt-6 font-semibold">Droit applicable</h3>
+      <p>Les présentes conditions sont soumises au droit français. À défaut de résolution amiable, le litige est porté devant les juridictions compétentes dans les conditions prévues par la loi ; le consommateur peut notamment saisir, à son choix, la juridiction du lieu où il demeurait au moment de la conclusion du contrat ou de la survenance du fait dommageable.</p>
 
       <h2>11. Éditeur du site et contact</h2>
       <ul>

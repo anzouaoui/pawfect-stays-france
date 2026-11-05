@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { LegalPage } from "@/components/LegalPage";
+import { LegalPage, LegalTodo as Todo } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/mentions-legales")({
   head: () => ({
@@ -15,18 +14,6 @@ export const Route = createFileRoute("/mentions-legales")({
   }),
   component: MentionsLegales,
 });
-
-/**
- * Information still to be provided by the publisher. Rendered highlighted so a missing
- * value cannot go unnoticed; search the codebase for "À COMPLÉTER" before going live.
- */
-function Todo({ children }: { children: ReactNode }) {
-  return (
-    <mark data-placeholder className="rounded bg-yellow-200 px-1 text-yellow-950 dark:bg-yellow-300">
-      [À COMPLÉTER : {children}]
-    </mark>
-  );
-}
 
 const CONTACT_EMAIL = "contact@bricapattes.fr";
 
@@ -146,7 +133,8 @@ function MentionsLegales() {
         Conformément aux articles L. 612-1 et suivants du Code de la consommation, tout consommateur peut recourir
         gratuitement à un médiateur de la consommation en vue de la résolution amiable d’un litige, après réclamation
         écrite préalable auprès de PetInn restée sans réponse satisfaisante. Médiateur : <Todo>nom, adresse postale et
-        site internet du médiateur auquel l’éditeur a adhéré</Todo>.
+        site internet du médiateur auquel l’éditeur a adhéré</Todo>. Les modalités de saisine sont détaillées à
+        l’article 10 des <Link to="/cgu" className="underline">conditions générales d’utilisation</Link>.
       </p>
 
       <h2>7. Documents liés</h2>
