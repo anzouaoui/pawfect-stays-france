@@ -22,16 +22,29 @@ describe("Mentions légales page", () => {
     }
   });
 
-  it("lists every publisher field, each with a visible placeholder", () => {
+  it("identifies the publisher with the same details as the CGU (article 11)", () => {
     const { container } = render(<Page />);
-    for (const field of ["Raison sociale", "Forme juridique", "Capital social", "Siège social", "Immatriculation", "N° de TVA intracommunautaire", "E-mail", "Téléphone"]) {
-      const item = [...container.querySelectorAll("li")].find((li) => li.textContent?.startsWith(`${field} :`));
-      expect(item, field).toBeDefined();
-      expect(item!.querySelector("[data-placeholder]"), field).not.toBeNull();
-    }
-    const placeholders = container.querySelectorAll("mark[data-placeholder]");
-    expect(placeholders.length).toBeGreaterThan(10);
-    for (const p of placeholders) expect(p.textContent).toMatch(/^\[À COMPLÉTER : .+\]$/);
+    const field = (label: string) =>
+      [...container.querySelectorAll("li")].find((li) => li.textContent?.startsWith(`${label} :`))?.textContent;
+    expect(field("Éditeur")).toBe("Éditeur : Anouk Zouaoui");
+    expect(field("Forme juridique")).toBe("Forme juridique : entrepreneur individuel (EI)");
+    expect(field("Siège")).toBe("Siège : 9 Place de la Piscine, 95300 Pontoise, France");
+    expect(field("Immatriculation")?.replace(/\s/g, "")).toContain("SIRET98228665000022");
+    expect(field("TVA")).toBe("TVA : TVA non applicable, art. 293 B du CGI");
+    expect(field("E-mail")).toBe("E-mail : contact@bricapattes.fr");
+    expect(screen.getAllByRole("link", { name: "contact@bricapattes.fr" })[0]).toHaveAttribute("href", "mailto:contact@bricapattes.fr");
+    expect(container.textContent).toContain("Anouk Zouaoui, en qualité d’entrepreneur individuel");
+    expect(container.textContent).not.toMatch(/Capital social|marque déposée/);
+  });
+
+  it("names the host and keeps only the 4 facts still unknown as visible placeholders", () => {
+    const { container } = render(<Page />);
+    expect(container.textContent).toContain("Lovable Labs Sweden AB, Regeringsgatan 25, 111 53 Stockholm, Suède");
+    expect(container.textContent).toContain("générées par intelligence artificielle");
+    const placeholders = [...container.querySelectorAll("mark[data-placeholder]")].map((p) => p.textContent);
+    for (const p of placeholders) expect(p).toMatch(/^\[À COMPLÉTER : .+\]$/);
+    expect(placeholders).toHaveLength(4);
+    expect(placeholders.join(" ")).toMatch(/téléphone de contact.*téléphone de l’hébergeur.*région.*médiateur/s);
   });
 
   it("covers the GDPR essentials and links to the other legal pages", () => {
