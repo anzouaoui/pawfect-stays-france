@@ -32,19 +32,20 @@ describe("Mentions légales page", () => {
     expect(field("Immatriculation")?.replace(/\s/g, "")).toContain("SIRET98228665000022");
     expect(field("TVA")).toBe("TVA : TVA non applicable, art. 293 B du CGI");
     expect(field("E-mail")).toBe("E-mail : contact@bricapattes.fr");
+    expect(field("Téléphone")).toBe("Téléphone : communiqué sur demande à contact@bricapattes.fr");
     expect(screen.getAllByRole("link", { name: "contact@bricapattes.fr" })[0]).toHaveAttribute("href", "mailto:contact@bricapattes.fr");
     expect(container.textContent).toContain("Anouk Zouaoui, en qualité d’entrepreneur individuel");
     expect(container.textContent).not.toMatch(/Capital social|marque déposée/);
   });
 
-  it("names the host and keeps only the 4 facts still unknown as visible placeholders", () => {
+  it("names the host and keeps only the 3 facts still unknown as visible placeholders", () => {
     const { container } = render(<Page />);
     expect(container.textContent).toContain("Lovable Labs Sweden AB, Regeringsgatan 25, 111 53 Stockholm, Suède");
     expect(container.textContent).toContain("générées par intelligence artificielle");
     const placeholders = [...container.querySelectorAll("mark[data-placeholder]")].map((p) => p.textContent);
     for (const p of placeholders) expect(p).toMatch(/^\[À COMPLÉTER : .+\]$/);
-    expect(placeholders).toHaveLength(4);
-    expect(placeholders.join(" ")).toMatch(/téléphone de contact.*téléphone de l’hébergeur.*région.*médiateur/s);
+    expect(placeholders).toHaveLength(3);
+    expect(placeholders.join(" ")).toMatch(/téléphone de l’hébergeur.*région.*médiateur/s);
   });
 
   it("covers the GDPR essentials and links to the other legal pages", () => {

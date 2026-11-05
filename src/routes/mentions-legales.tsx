@@ -47,7 +47,8 @@ function MentionsLegales() {
         <li>Immatriculation : SIRET 982 286 650 00022 (SIREN 982 286 650)</li>
         <li>TVA : TVA non applicable, art. 293 B du CGI</li>
         <li>E-mail : <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
-        <li>Téléphone : <Todo>numéro de téléphone de contact</Todo></li>
+        {/* Temporaire, non conforme LCEN (art. 6-III et 19) : remplacer par un numéro dédié avant l’ouverture au public. */}
+        <li>Téléphone : communiqué sur demande à <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
       </ul>
 
       <h2>2. Directeur de la publication</h2>
