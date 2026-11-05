@@ -70,8 +70,16 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
     listingId: z.string().uuid(), checkIn: z.string(), checkOut: z.string(),
     dogs: z.array(dogSchema).min(1).max(10), message: z.string().max(500),
+    // Explicit acceptance of the CGU and cancellation policy, checked by the traveler.
+    acceptedTerms: z.literal(true, { message: "Vous devez accepter les CGU et la politique d’annulation." }),
+    termsVersion: z.string().max(100),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    const { TERMS_VERSION } = await import("@/lib/legal");
+    if (data.termsVersion !== TERMS_VERSION) {
+      throw new Error("Les conditions générales ont été mises à jour : rechargez la page et acceptez-les à nouveau.");
+    }
+    const termsAcceptedAt = new Date().toISOString();
     // Check both keys before creating anything: no orphan request if payment cannot proceed.
     const cfg = await stripeConfig();
     const check = cfg.checkStripeConfig();
@@ -98,6 +106,9 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
         amount: String(amount), currency: "eur", capture_method: "manual",
         "automatic_payment_methods[enabled]": "true", "automatic_payment_methods[allow_redirects]": "never",
         "metadata[booking_id]": row.id, description: `PetInn — ${row.listing_name}`,
+        // Proof of consent kept with the payment: who (traveler), which versions, when.
+        "metadata[traveler_id]": context.userId, "metadata[terms_version]": TERMS_VERSION,
+        "metadata[terms_accepted_at]": termsAcceptedAt,
       }, `hold-${row.id}`);
     } catch (e) {
       await rollback("PaymentIntent non créé");

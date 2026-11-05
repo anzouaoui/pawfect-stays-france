@@ -16,7 +16,8 @@ vi.mock("@tanstack/react-start", () => ({
       middleware: () => builder,
       inputValidator: (v: (d: unknown) => unknown) => { validate = v; return builder; },
       handler: (h: (ctx: { data: unknown; context: unknown }) => unknown) =>
-        (opts: { data?: unknown; context?: unknown } = {}) => h({ data: validate(opts.data), context: opts.context }),
+        // async like a real server function: validation errors come back as rejections.
+        async (opts: { data?: unknown; context?: unknown } = {}) => h({ data: validate(opts.data), context: opts.context }),
     };
     return builder;
   },
@@ -55,6 +56,7 @@ const notifyBooking = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/booking-emails/notify.server", () => ({ notifyBooking }));
 
 import { createBookingWithHold, confirmHold, decideBooking } from "@/lib/payments.functions";
+import { TERMS_VERSION } from "@/lib/legal";
 
 // --- Stripe fake (fetch) -------------------------------------------------------------
 type StripeCall = { method: string; path: string; idempotencyKey?: string | undefined };
@@ -249,10 +251,11 @@ describe("Traveler cancellation before the host answers → release", () => {
 });
 
 describe("Hold creation and card confirmation", () => {
-  const create = () => (createBookingWithHold as unknown as (o: object) => Promise<{ bookingId: string; clientSecret: string }>)({
-    data: { listingId: LISTING, checkIn: "2026-12-01", checkOut: "2026-12-03", message: "", dogs: [{ id: "d1", name: "Nala", breed: "Lab", size: "grand", weight: 28, behavior: "" }] },
-    context: ctx(TRAVELER),
-  });
+  const request = { listingId: LISTING, checkIn: "2026-12-01", checkOut: "2026-12-03", message: "", dogs: [{ id: "d1", name: "Nala", breed: "Lab", size: "grand", weight: 28, behavior: "" }] };
+  const create = (consent: object = { acceptedTerms: true, termsVersion: TERMS_VERSION }) =>
+    (createBookingWithHold as unknown as (o: object) => Promise<{ bookingId: string; clientSecret: string }>)({
+      data: { ...request, ...consent }, context: ctx(TRAVELER),
+    });
   const confirm = () => (confirmHold as unknown as (o: object) => Promise<{ ok: boolean }>)({ data: { bookingId: BOOKING }, context: ctx(TRAVELER) });
 
   it("creates a manual-capture PaymentIntent in EUR for subtotal + fee and links it", async () => {
@@ -262,6 +265,31 @@ describe("Hold creation and card confirmation", () => {
     const body = new URLSearchParams(((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0]![1] as RequestInit).body as string);
     expect(Object.fromEntries(body)).toMatchObject({ amount: "33000", currency: "eur", capture_method: "manual", "metadata[booking_id]": BOOKING });
     expect(statusUpdates()[0]!.values).toEqual({ payment_intent_id: "pi_new" });
+  });
+
+  it("records the consent (traveler, terms versions, timestamp) on the PaymentIntent", async () => {
+    const before = Date.now();
+    await create();
+    const body = Object.fromEntries(new URLSearchParams(((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0]![1] as RequestInit).body as string));
+    expect(body).toMatchObject({ "metadata[traveler_id]": TRAVELER, "metadata[terms_version]": TERMS_VERSION });
+    expect(TERMS_VERSION).toMatch(/^cgu:\d{4}-\d{2}-\d{2};annulation:\d{4}-\d{2}-\d{2}$/);
+    const at = Date.parse(body["metadata[terms_accepted_at]"]!);
+    expect(at).toBeGreaterThanOrEqual(before - 1000);
+    expect(at).toBeLessThanOrEqual(Date.now() + 1000);
+  });
+
+  it("refuses to create anything without explicit consent", async () => {
+    for (const consent of [{}, { acceptedTerms: false, termsVersion: TERMS_VERSION }, { acceptedTerms: "true", termsVersion: TERMS_VERSION }]) {
+      await expect(create(consent)).rejects.toThrow();
+    }
+    expect(db.queries).toHaveLength(0);
+    expect(stripeCalls).toHaveLength(0);
+  });
+
+  it("asks to accept again when the terms changed since the page was loaded", async () => {
+    await expect(create({ acceptedTerms: true, termsVersion: "cgu:2026-10-27;annulation:2026-10-27" })).rejects.toThrow("mises à jour");
+    expect(db.queries).toHaveLength(0);
+    expect(stripeCalls).toHaveLength(0);
   });
 
   it("deletes the request if the PaymentIntent cannot be created (no orphan request)", async () => {

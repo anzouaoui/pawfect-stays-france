@@ -9,6 +9,8 @@ import { getPublishedListing, isAvailable } from "@/lib/public-listings.function
 import { useServerFn } from "@tanstack/react-start";
 import { confirmHold, createBookingWithHold } from "@/lib/payments.functions";
 import { CardHoldForm } from "@/components/CardHoldForm";
+import { BookingConsent, CARD_HOLD_NOTICE } from "@/components/BookingConsent";
+import { TERMS_VERSION } from "@/lib/legal";
 import { useSessionUser } from "@/lib/booking-requests";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
@@ -56,15 +58,18 @@ function Booking() {
 
   const user = useSessionUser();
   const [busy, setBusy] = useState(false);
+  const [accepted, setAccepted] = useState(false);
   const [hold, setHold] = useState<{ bookingId: string; clientSecret: string } | null>(null);
   const createHold = useServerFn(createBookingWithHold);
   const confirm = useServerFn(confirmHold);
   const submit = async () => {
+    if (!accepted) return;
     if (h) {
       setBusy(true);
       try {
         setHold(await createHold({ data: {
           listingId: l.id, checkIn: inD, checkOut: outD, message: msg.trim(),
+          acceptedTerms: true, termsVersion: TERMS_VERSION,
           dogs: chosen.map(({ id, name, breed, size, weight, behavior }) => ({ id, name, breed, size, weight: Number(weight) || 0, behavior: behavior ?? "" })),
         } }));
       } catch (e) { toast.error((e as Error).message || "La demande n’a pas pu être envoyée."); }
@@ -117,7 +122,12 @@ function Booking() {
             <textarea value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 500))} placeholder="Optionnel" className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-sm" rows={3} />
             {h && user === null ? (
               <Button asChild className="mt-4 h-12 w-full"><Link to="/auth" search={{ redirect: `/reserver/${l.id}` }}>Se connecter pour réserver</Link></Button>
-            ) : <Button disabled={!ok || busy} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">{busy ? "Envoi…" : "Continuer vers le paiement sécurisé"}</Button>}
+            ) : (<>
+              <BookingConsent checked={accepted} onChange={setAccepted} />
+              {h && <p className="mt-3 flex gap-2 text-sm text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" />{CARD_HOLD_NOTICE}</p>}
+              <Button disabled={!ok || busy || !accepted} onClick={submit} className="mt-4 h-12 w-full bg-accent font-semibold text-accent-foreground hover:bg-accent/90">{busy ? "Envoi…" : "Continuer vers le paiement sécurisé"}</Button>
+              {ok && !accepted && <p className="mt-2 text-center text-xs text-muted-foreground">Cochez la case ci-dessus pour continuer.</p>}
+            </>)}
           </>)}
         </section>
         <aside className="h-fit rounded-2xl border bg-card p-5 md:sticky md:top-20">
