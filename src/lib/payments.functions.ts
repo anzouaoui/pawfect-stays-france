@@ -2,14 +2,36 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+async function stripeConfig() {
+  return import("@/lib/stripe-config.server");
+}
+
+/** Calls the Stripe API with the server secret key. Throws a user-safe message on any failure. */
 async function stripe(path: string, body?: Record<string, string>) {
-  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
-    method: body ? "POST" : "GET",
-    headers: { Authorization: `Bearer ${process.env["STRIPE_SECRET_KEY"]}`, "Content-Type": "application/x-www-form-urlencoded" },
-    body: body ? new URLSearchParams(body).toString() : null,
-  });
-  const json = (await res.json()) as { id: string; status: string; client_secret: string; error?: { message: string } };
-  if (!res.ok) { console.error("Stripe error", json.error?.message); throw new Error("Erreur de paiement"); }
+  const cfg = await stripeConfig();
+  const secret = cfg.checkSecretKey();
+  if (!secret.ok) {
+    cfg.logStripeConfigError(secret);
+    throw new Error(cfg.PAYMENT_UNAVAILABLE_MESSAGE);
+  }
+  let res: Response;
+  try {
+    res = await fetch(`https://api.stripe.com/v1/${path}`, {
+      method: body ? "POST" : "GET",
+      headers: { Authorization: `Bearer ${secret.secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: body ? new URLSearchParams(body).toString() : null,
+    });
+  } catch (e) {
+    console.error("[stripe] API injoignable", path.split("/")[0], (e as Error).message);
+    throw new Error(cfg.PAYMENT_UNAVAILABLE_MESSAGE);
+  }
+  const json = (await res.json().catch(() => null)) as
+    { id: string; status: string; client_secret: string; error?: { message?: string; code?: string; type?: string } } | null;
+  if (!res.ok || !json) {
+    console.error("[stripe] erreur API", res.status, json?.error?.type, json?.error?.code, json?.error?.message);
+    if (res.status === 401) cfg.logStripeConfigError({ code: "invalid_secret_key", detail: "Stripe refuse STRIPE_SECRET_KEY (401) : clé révoquée ou erronée." });
+    throw new Error(res.status === 401 ? cfg.PAYMENT_UNAVAILABLE_MESSAGE : "Erreur de paiement");
+  }
   return json;
 }
 
@@ -17,9 +39,22 @@ async function admin() {
   return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 }
 
-export const getStripeKey = createServerFn({ method: "GET" }).handler(async () => ({
-  key: process.env["STRIPE_PUBLISHABLE_KEY"] ?? process.env["VITE_STRIPE_PUBLISHABLE_KEY"] ?? "",
-}));
+export type StripeKeyResult = { key: string; mode: "test" | "live" } | { key: ""; error: string };
+
+/**
+ * Publishable key for Stripe.js. Returns `{ key: "", error }` (never throws) when the keys are
+ * missing, malformed, inconsistent between test/live, or when a secret key was put in the
+ * publishable slot — in which case it is never sent to the browser.
+ */
+export const getStripeKey = createServerFn({ method: "GET" }).handler(async (): Promise<StripeKeyResult> => {
+  const cfg = await stripeConfig();
+  const check = cfg.checkStripeConfig();
+  if (!check.ok) {
+    cfg.logStripeConfigError(check);
+    return { key: "", error: cfg.PAYMENT_UNAVAILABLE_MESSAGE };
+  }
+  return { key: check.publishableKey, mode: check.mode };
+});
 
 const dogSchema = z.object({ id: z.string(), name: z.string(), breed: z.string(), size: z.string(), weight: z.number(), behavior: z.string() });
 
@@ -31,6 +66,13 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
     dogs: z.array(dogSchema).min(1).max(10), message: z.string().max(500),
   }).parse(d))
   .handler(async ({ data, context }) => {
+    // Check both keys before creating anything: no orphan request if payment cannot proceed.
+    const cfg = await stripeConfig();
+    const check = cfg.checkStripeConfig();
+    if (!check.ok) {
+      cfg.logStripeConfigError(check);
+      throw new Error(cfg.BOOKING_PAYMENT_UNAVAILABLE_MESSAGE);
+    }
     const { data: row, error } = await context.supabase.from("booking_requests").insert({
       listing_id: data.listingId, host_id: "00000000-0000-0000-0000-000000000000",
       check_in: data.checkIn, check_out: data.checkOut, dogs: data.dogs, message: data.message,
