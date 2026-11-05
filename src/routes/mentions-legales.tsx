@@ -28,9 +28,11 @@ function Todo({ children }: { children: ReactNode }) {
   );
 }
 
+const CONTACT_EMAIL = "contact@bricapattes.fr";
+
 function MentionsLegales() {
   return (
-    <LegalPage title="Mentions légales" updated="5 novembre 2026">
+    <LegalPage title="Mentions légales" updated="6 novembre 2026">
       <p>
         Conformément aux articles 6-III et 19 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l’économie
         numérique (LCEN), les informations suivantes sont portées à la connaissance des utilisateurs du site PetInn
@@ -39,34 +41,32 @@ function MentionsLegales() {
 
       <h2>1. Éditeur du site</h2>
       <ul>
-        <li>Raison sociale : <Todo>raison sociale, ou nom et prénom si entrepreneur individuel</Todo></li>
-        <li>Forme juridique : <Todo>SAS, SASU, SARL, EURL, entreprise individuelle (micro-entreprise)…</Todo></li>
-        <li>Capital social : <Todo>montant en euros — à supprimer pour une entreprise individuelle</Todo></li>
-        <li>Siège social : <Todo>adresse postale complète</Todo></li>
-        <li>Immatriculation : <Todo>SIRET (14 chiffres) et RCS de la ville, ou RNE pour un entrepreneur individuel</Todo></li>
-        <li>N° de TVA intracommunautaire : <Todo>FR + 11 caractères, ou « TVA non applicable, art. 293 B du CGI »</Todo></li>
-        <li>E-mail : <Todo>adresse de contact, ex. contact@domaine.fr</Todo></li>
-        <li>Téléphone : <Todo>numéro de téléphone</Todo></li>
+        <li>Éditeur : Anouk Zouaoui</li>
+        <li>Forme juridique : entrepreneur individuel (EI)</li>
+        <li>Siège : 9 Place de la Piscine, 95300 Pontoise, France</li>
+        <li>Immatriculation : SIRET 982 286 650 00022 (SIREN 982 286 650)</li>
+        <li>TVA : TVA non applicable, art. 293 B du CGI</li>
+        <li>E-mail : <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
+        {/* Temporaire, non conforme LCEN (art. 6-III et 19) : remplacer par un numéro dédié avant l’ouverture au public. */}
+        <li>Téléphone : communiqué sur demande à <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
       </ul>
 
       <h2>2. Directeur de la publication</h2>
       <p>
-        <Todo>nom et prénom du directeur de la publication</Todo>, en qualité de{" "}
-        <Todo>fonction : président, gérant, entrepreneur individuel…</Todo>. Contact : <Todo>e-mail</Todo>.
+        Anouk Zouaoui, en qualité d’entrepreneur individuel. Contact :{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>.
       </p>
 
       <h2>3. Hébergement</h2>
-      <p>Le Site et ses données sont hébergés par :</p>
-      <ul>
-        <li>
-          Hébergement de l’application : <Todo>nom et raison sociale de l’hébergeur</Todo>, <Todo>adresse</Todo>,{" "}
-          <Todo>téléphone</Todo>.
-        </li>
-        <li>
-          Base de données et stockage des fichiers (Lovable Cloud) : <Todo>raison sociale du fournisseur</Todo>,{" "}
-          <Todo>adresse</Todo>, <Todo>téléphone</Todo>, <Todo>région d’hébergement des données, ex. Union européenne</Todo>.
-        </li>
-      </ul>
+      <p>
+        Le Site, sa base de données et ses fichiers sont hébergés par Lovable (service Lovable Cloud) : Lovable Labs
+        Sweden AB, Regeringsgatan 25, 111 53 Stockholm, Suède, société du groupe Lovable Labs Incorporated.
+        Téléphone : <Todo>téléphone de l’hébergeur, à demander à Lovable</Todo>.
+      </p>
+      <p>
+        Lovable Cloud s’appuie sur l’infrastructure de Supabase pour la base de données et le stockage des fichiers.
+        Région d’hébergement des données : <Todo>région, à confirmer auprès de Lovable</Todo>.
+      </p>
       <p>
         Les paiements sont traités par Stripe Payments Europe, Limited, 1 Grand Canal Street Lower, Grand Canal Dock,
         Dublin, D02 H210, Irlande. PetInn ne conserve aucun numéro de carte bancaire.
@@ -76,8 +76,7 @@ function MentionsLegales() {
       <ul>
         <li>
           La structure du Site, ses textes, son code, son logo et la dénomination « PetInn » sont la propriété exclusive
-          de l’éditeur, sauf mention contraire. « PetInn » est <Todo>une marque déposée à l’INPI sous le n° …, ou retirer
-          cette phrase si aucune marque n’est déposée</Todo>.
+          de l’éditeur, sauf mention contraire.
         </li>
         <li>
           Toute reproduction, représentation, modification ou exploitation de tout ou partie du Site, par quelque procédé
@@ -89,17 +88,16 @@ function MentionsLegales() {
           garantit en détenir les droits et autorise PetInn à les afficher sur le Site pour la durée de l’annonce.
         </li>
         <li>
-          Certaines images d’illustration ne représentent pas des logements réels ; elles sont signalées comme telles.
-          Crédits : <Todo>banques d’images et auteurs des illustrations utilisées</Todo>.
+          Les images d’illustration du Site ont été générées par intelligence artificielle avec l’outil de création
+          d’images de Lovable. Elles ne représentent pas des logements réels et sont signalées comme telles.
         </li>
       </ul>
 
       <h2>5. Données personnelles (RGPD)</h2>
       <p>
         Le responsable du traitement des données personnelles collectées sur le Site est l’éditeur mentionné à l’article
-        1. Pour toute question ou pour exercer vos droits : <Todo>e-mail dédié aux données personnelles, ex.
-        donnees@domaine.fr</Todo>
-        {" "}(ou <Todo>coordonnées du délégué à la protection des données, s’il en a été désigné un</Todo>).
+        1. Pour toute question ou pour exercer vos droits :{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>.
       </p>
 
       <h3 className="mt-6 font-semibold">Données traitées et finalités</h3>
@@ -116,8 +114,7 @@ function MentionsLegales() {
       <p>
         Vos données sont accessibles à l’équipe PetInn et, pour une réservation, à l’autre partie (l’Hôte voit le
         passeport canin et le message du Voyageur ; le Voyageur voit l’annonce). Elles sont traitées par nos sous-traitants
-        techniques : hébergement (article 3), paiement (Stripe), envoi des e-mails transactionnels{" "}
-        (<Todo>prestataire e-mail, ex. Resend, Inc.</Todo>). Lorsque l’un d’eux traite des données hors de l’Union
+        techniques : hébergement (article 3), paiement (Stripe), envoi des e-mails transactionnels (Resend, Inc.). Lorsque l’un d’eux traite des données hors de l’Union
         européenne, le transfert est encadré par les clauses contractuelles types de la Commission européenne ou une
         décision d’adéquation. Vos données ne sont ni vendues ni utilisées à des fins publicitaires.
       </p>
