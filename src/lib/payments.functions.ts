@@ -6,8 +6,11 @@ async function stripeConfig() {
   return import("@/lib/stripe-config.server");
 }
 
-/** Calls the Stripe API with the server secret key. Throws a user-safe message on any failure. */
-async function stripe(path: string, body?: Record<string, string>) {
+/**
+ * Calls the Stripe API with the server secret key. Throws a user-safe message on any failure.
+ * `idempotencyKey` makes a retried POST (capture, cancel…) safe: Stripe replays the first result.
+ */
+async function stripe(path: string, body?: Record<string, string>, idempotencyKey?: string) {
   const cfg = await stripeConfig();
   const secret = cfg.checkSecretKey();
   if (!secret.ok) {
@@ -18,7 +21,10 @@ async function stripe(path: string, body?: Record<string, string>) {
   try {
     res = await fetch(`https://api.stripe.com/v1/${path}`, {
       method: body ? "POST" : "GET",
-      headers: { Authorization: `Bearer ${secret.secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        Authorization: `Bearer ${secret.secretKey}`, "Content-Type": "application/x-www-form-urlencoded",
+        ...(body && idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
       body: body ? new URLSearchParams(body).toString() : null,
     });
   } catch (e) {
@@ -79,12 +85,29 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
     }).select().single();
     if (error || !row) throw new Error(error?.message.includes("propre logement") ? "Vous ne pouvez pas réserver votre propre logement." : "Demande refusée : vérifiez les dates et vos chiens.");
     const amount = Math.round((Number(row.subtotal) + Number(row.fee)) * 100);
-    const pi = await stripe("payment_intents", {
-      amount: String(amount), currency: "eur", capture_method: "manual",
-      "automatic_payment_methods[enabled]": "true", "automatic_payment_methods[allow_redirects]": "never",
-      "metadata[booking_id]": row.id, description: `PetInn — ${row.listing_name}`,
-    });
-    await (await admin()).from("booking_requests").update({ payment_intent_id: pi.id }).eq("id", row.id);
+    const db = await admin();
+    // No request may stay without its hold: undo the insert if the PaymentIntent cannot be attached.
+    const rollback = async (reason: string, paymentIntentId?: string) => {
+      console.error("[payments] création d'empreinte annulée", row.id, reason);
+      if (paymentIntentId) await stripe(`payment_intents/${paymentIntentId}/cancel`, {}, `cancel-${row.id}`).catch(() => undefined);
+      await db.from("booking_requests").delete().eq("id", row.id).eq("status", "en attente");
+    };
+    let pi: Awaited<ReturnType<typeof stripe>>;
+    try {
+      pi = await stripe("payment_intents", {
+        amount: String(amount), currency: "eur", capture_method: "manual",
+        "automatic_payment_methods[enabled]": "true", "automatic_payment_methods[allow_redirects]": "never",
+        "metadata[booking_id]": row.id, description: `PetInn — ${row.listing_name}`,
+      }, `hold-${row.id}`);
+    } catch (e) {
+      await rollback("PaymentIntent non créé");
+      throw e;
+    }
+    const { error: linkError } = await db.from("booking_requests").update({ payment_intent_id: pi.id }).eq("id", row.id);
+    if (linkError) {
+      await rollback("PaymentIntent non rattaché", pi.id);
+      throw new Error("La demande n’a pas pu être enregistrée. Votre carte n’a pas été sollicitée, réessayez.");
+    }
     return { bookingId: row.id, clientSecret: pi.client_secret };
   });
 
@@ -97,13 +120,23 @@ export const confirmHold = createServerFn({ method: "POST" })
     if (!row?.payment_intent_id) throw new Error("Demande introuvable");
     const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
     if (pi.status !== "requires_capture") throw new Error("Empreinte bancaire non confirmée");
-    await (await admin()).from("booking_requests").update({ payment_status: "autorisé" }).eq("id", row.id);
+    const { error } = await (await admin()).from("booking_requests").update({ payment_status: "autorisé" }).eq("id", row.id).eq("status", "en attente");
+    if (error) throw new Error("Empreinte enregistrée mais confirmation impossible : réessayez.");
     const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
     await notifyBooking("host-new-request", row);
     return { ok: true };
   });
 
-/** Host accept (capture) / refuse (release), traveler cancel (release). */
+/**
+ * Host accept (capture) / refuse (release), traveler cancel (release).
+ * Consistency rules:
+ * - Stripe is called before the database; if Stripe fails, the request is left untouched.
+ * - Each step is retry-safe: the PaymentIntent is read first, so an already captured or
+ *   canceled hold is not captured/canceled twice (and POSTs carry an idempotency key).
+ * - A hold that was already captured is never marked "libéré".
+ * - The final update only applies if the request is still "en attente" (no race with the
+ *   cron or with the other party).
+ */
 export const decideBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ bookingId: z.string().uuid(), action: z.enum(["acceptée", "refusée", "annulée"]) }).parse(d))
@@ -114,23 +147,49 @@ export const decideBooking = createServerFn({ method: "POST" })
     if (data.action === "annulée" ? !isTraveler : !isHost) throw new Error("Action non autorisée");
     if (row.status !== "en attente") throw new Error("Demande déjà traitée");
     let payment_status = row.payment_status;
+    const db = await admin();
     if (data.action === "acceptée") {
       if (row.payment_status !== "autorisé" || !row.payment_intent_id) throw new Error("Carte du voyageur non autorisée");
-      await stripe(`payment_intents/${row.payment_intent_id}/capture`, {});
+      const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
+      if (pi.status === "requires_capture") {
+        try {
+          await stripe(`payment_intents/${row.payment_intent_id}/capture`, {}, `capture-${row.id}`);
+        } catch {
+          throw new Error("Le paiement n’a pas pu être encaissé : la demande reste en attente. Réessayez dans quelques minutes.");
+        }
+      } else if (pi.status !== "succeeded") {
+        // canceled (expired hold, 7-day limit) or never confirmed: nothing to capture.
+        console.error("[payments] capture impossible", row.id, pi.status);
+        throw new Error("L’empreinte bancaire du voyageur n’est plus valide : la demande ne peut pas être acceptée.");
+      }
       payment_status = "encaissé";
-      // Lock the accepted nights on the listing so no new request can overlap them.
-      const db = await admin();
-      const { data: listing } = await db.from("host_listings").select("blocked_dates").eq("id", row.listing_id).single();
-      const nights: string[] = [];
-      for (let d = new Date(row.check_in); d < new Date(row.check_out); d.setUTCDate(d.getUTCDate() + 1)) nights.push(d.toISOString().slice(0, 10));
-      await db.from("host_listings").update({ blocked_dates: [...new Set([...(listing?.blocked_dates ?? []), ...nights])] }).eq("id", row.listing_id);
     } else if (row.payment_intent_id) {
       const pi = await stripe(`payment_intents/${row.payment_intent_id}`);
-      if (pi.status !== "canceled" && pi.status !== "succeeded") await stripe(`payment_intents/${row.payment_intent_id}/cancel`, {});
+      if (pi.status === "succeeded") {
+        console.error("[payments] empreinte déjà encaissée sur une demande en attente", row.id);
+        throw new Error("Le paiement de cette demande a déjà été encaissé : contactez le support PetInn.");
+      }
+      if (pi.status !== "canceled") await stripe(`payment_intents/${row.payment_intent_id}/cancel`, {}, `cancel-${row.id}`);
       payment_status = "libéré";
     }
-    const { error } = await (await admin()).from("booking_requests").update({ status: data.action, payment_status }).eq("id", row.id);
-    if (error) throw new Error("Mise à jour impossible");
+    const { data: updated, error } = await db.from("booking_requests")
+      .update({ status: data.action, payment_status }).eq("id", row.id).eq("status", "en attente").select("id");
+    if (error) {
+      console.error("[payments] statut non mis à jour après Stripe", row.id, data.action, error.message);
+      throw new Error("Mise à jour impossible : réessayez, le paiement ne sera pas traité deux fois.");
+    }
+    if (!updated?.length) throw new Error("Demande déjà traitée");
+    if (data.action === "acceptée") {
+      // Lock the accepted nights on the listing so no new request can overlap them.
+      try {
+        const { data: listing } = await db.from("host_listings").select("blocked_dates").eq("id", row.listing_id).single();
+        const nights: string[] = [];
+        for (let d = new Date(row.check_in); d < new Date(row.check_out); d.setUTCDate(d.getUTCDate() + 1)) nights.push(d.toISOString().slice(0, 10));
+        await db.from("host_listings").update({ blocked_dates: [...new Set([...(listing?.blocked_dates ?? []), ...nights])] }).eq("id", row.listing_id);
+      } catch (e) {
+        console.error("[payments] dates non bloquées après acceptation", row.id, (e as Error).message);
+      }
+    }
     if (data.action !== "annulée") {
       const { notifyBooking } = await import("@/lib/booking-emails/notify.server");
       await notifyBooking(data.action === "acceptée" ? "traveler-accepted" : "traveler-refused", row);
