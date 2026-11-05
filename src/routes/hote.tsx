@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { LISTINGS } from "@/lib/data";
 import { useRequests, type BookingRequest } from "@/lib/store";
 import { RequestCard } from "@/components/RequestCard";
+import { euros, hostPayout } from "@/lib/payouts";
 import { useServerFn } from "@tanstack/react-start";
 import { decideBooking } from "@/lib/payments.functions";
 import { toRequest, useLiveRequests, useSessionUser } from "@/lib/booking-requests";
@@ -43,6 +44,11 @@ function Host() {
   const live = (rows ?? []).map((r) => ({ ...toRequest(r), live: true as const }));
   const all = [...live, ...local.map((r) => ({ ...r, live: false as const }))];
   const list = all.filter((r) => r.status === tab);
+  // Net amounts still to be transferred (scheduled or in progress), real bookings only.
+  const upcoming = all.reduce((acc, r) => {
+    const p = hostPayout(r);
+    return p && (p.status === "scheduled" || p.status === "processing") ? { count: acc.count + 1, net: acc.net + p.net } : acc;
+  }, { count: 0, net: 0 });
 
   const decideFn = useServerFn(decideBooking);
   const decide = async (r: (typeof all)[number], status: "acceptée" | "refusée") => {
@@ -60,6 +66,12 @@ function Host() {
       {user === null && <p className="mt-4 rounded-2xl border bg-card p-4 text-sm"><Link to="/auth" search={{ redirect: "/hote" }} className="font-semibold underline">Connectez-vous</Link> pour recevoir les demandes envoyées sur vos annonces.</p>}
       <div className="mt-6 flex flex-wrap gap-2">{(["en attente", "acceptée", "refusée", "annulée", "expirée"] as const).map((t) => (
         <button key={t} onClick={() => setTab(t)} className={`rounded-full border px-4 py-1.5 text-sm capitalize ${tab === t ? "bg-primary text-primary-foreground" : ""}`}>{t} ({all.filter((r) => r.status === t).length})</button>))}</div>
+      {tab === "acceptée" && upcoming.count > 0 && (
+        <p className="mt-6 rounded-2xl border bg-card p-4 text-sm">
+          À vous verser pour {upcoming.count} séjour{upcoming.count > 1 ? "s" : ""} accepté{upcoming.count > 1 ? "s" : ""} : <b>{euros(upcoming.net)}</b>.{" "}
+          Chaque virement est déclenché sous 24 h après l’arrivée du voyageur.
+        </p>
+      )}
       <div className="mt-6 space-y-4">
         {list.map((r) => <RequestCard key={r.id} r={r} host listing={LISTINGS.find((l) => l.id === r.listingId)}
           actions={r.status === "en attente" && <div className="mt-4 flex gap-2">

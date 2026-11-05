@@ -6,6 +6,8 @@ export type BookingRequest = {
   id: string; listingId: string; checkIn: string; checkOut: string; nights: number;
   dogIds: string[]; dogs: Dog[]; message: string; listingName?: string; subtotal: number; fee: number;
   status: "en attente" | "acceptée" | "refusée" | "annulée" | "expirée"; createdAt: string;
+  /** Cloud requests only (Stripe hold state); undefined for browser-stored sample requests. */
+  paymentStatus?: string;
 };
 
 function useLocal<T>(key: string, init: T) {

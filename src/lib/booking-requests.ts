@@ -11,7 +11,7 @@ export function toRequest(r: BookingRow): BookingRequest {
     id: r.id, listingId: r.listing_id, listingName: r.listing_name, checkIn: r.check_in, checkOut: r.check_out,
     nights: r.nights, dogs: (Array.isArray(r.dogs) ? r.dogs : []) as unknown as Dog[], dogIds: [],
     message: r.message, subtotal: Number(r.subtotal), fee: Number(r.fee),
-    status: r.status as BookingRequest["status"], createdAt: r.created_at,
+    status: r.status as BookingRequest["status"], createdAt: r.created_at, paymentStatus: r.payment_status,
   };
 }
 
