@@ -1,0 +1,75 @@
+{
+  "listings": [
+    {
+      "example": true,
+      "name": "Gîte des Chênes — maison avec jardin clos",
+      "type": "Gîte",
+      "city": "Sarlat-la-Canéda",
+      "region": "Dordogne",
+      "description": "Maison en pierre de 3 chambres au calme, à 5 minutes du centre médiéval. Jardin entièrement clos (clôture 1,50 m) de 800 m², terrasse ombragée et départ de randonnées à pied depuis le portail.",
+      "price_per_night": 95,
+      "dog_fee_per_night": 8,
+      "cleaning_fee": 45,
+      "min_nights": 2,
+      "available_from": "2026-12-01",
+      "available_to": "2027-09-30",
+      "blocked_dates": ["2026-12-24", "2026-12-25"],
+      "fenced_garden": true,
+      "sizes": ["petit", "moyen", "grand"],
+      "max_dogs": 2,
+      "equipment": ["Gamelles", "Panier", "Serviettes", "Sacs à déjections"],
+      "dog_rules": [
+        { "title": "Chiens seuls", "description": "Les chiens peuvent rester seuls au gîte 3 heures maximum, dans leur panier." },
+        { "title": "Chambres", "description": "Les chiens ne montent pas sur les lits ; une housse est fournie pour le canapé." }
+      ],
+      "photos": ["seed-photos/gite-des-chenes-1.jpg", "seed-photos/gite-des-chenes-2.jpg", "seed-photos/gite-des-chenes-3.jpg"]
+    },
+    {
+      "example": true,
+      "name": "Camping Les Dunes — mobil-home pet-friendly",
+      "type": "Camping",
+      "city": "Crozon",
+      "region": "Bretagne",
+      "description": "Mobil-home 2 chambres avec terrasse, dans un camping à 300 m d'une plage où les chiens sont acceptés hors saison. Aire de détente canine et douche pour chiens à l'entrée du camping.",
+      "price_per_night": 68,
+      "dog_fee_per_night": 5,
+      "cleaning_fee": 30,
+      "min_nights": 3,
+      "available_from": "2027-03-01",
+      "available_to": "2027-10-31",
+      "blocked_dates": [],
+      "fenced_garden": false,
+      "sizes": ["petit", "moyen"],
+      "max_dogs": 2,
+      "equipment": ["Gamelles", "Sacs à déjections", "Douche pour chien", "Plage à proximité"],
+      "dog_rules": [
+        { "title": "En laisse", "description": "Les chiens sont tenus en laisse dans les allées et les espaces communs du camping." },
+        { "title": "Catégories", "description": "Les chiens de 1re et 2e catégorie ne sont pas acceptés par le camping." }
+      ],
+      "photos": ["seed-photos/camping-les-dunes-1.jpg", "seed-photos/camping-les-dunes-2.jpg", "seed-photos/camping-les-dunes-3.jpg"]
+    },
+    {
+      "example": true,
+      "name": "Hôtel du Lac — chambre avec accès au parc",
+      "type": "Hôtel",
+      "city": "Annecy",
+      "region": "Haute-Savoie",
+      "description": "Chambre double au rez-de-chaussée avec sortie directe sur le parc de l'hôtel. Petit chien ou chien moyen bienvenu, gamelles et coussin fournis, promenade le long du lac à 2 minutes.",
+      "price_per_night": 140,
+      "dog_fee_per_night": 15,
+      "cleaning_fee": 0,
+      "min_nights": 1,
+      "available_from": "2026-12-01",
+      "available_to": "2027-12-31",
+      "blocked_dates": [],
+      "fenced_garden": false,
+      "sizes": ["petit", "moyen"],
+      "max_dogs": 1,
+      "equipment": ["Gamelles", "Panier", "Serviettes"],
+      "dog_rules": [
+        { "title": "Restaurant", "description": "Les chiens sont acceptés en terrasse mais pas dans la salle du restaurant." }
+      ],
+      "photos": ["seed-photos/hotel-du-lac-1.jpg", "seed-photos/hotel-du-lac-2.jpg", "seed-photos/hotel-du-lac-3.jpg"]
+    }
+  ]
+}
