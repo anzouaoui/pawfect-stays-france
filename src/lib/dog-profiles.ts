@@ -27,6 +27,14 @@ export async function saveDogProfiles(ownerId: string, inputs: DogProfileInput[]
   if (error) throw error;
 }
 
+/** Updates one of the traveler's dogs. Scoped by owner as well as by RLS. */
+export async function updateDogProfile(ownerId: string, id: string, input: DogProfileInput) {
+  const { error, data } = await supabase.from("dog_profiles").update(dogProfileSchema.parse(input))
+    .eq("owner_id", ownerId).eq("id", id).select("id");
+  if (error) throw error;
+  if (!data?.length) throw new Error("Ce passeport n’est plus disponible.");
+}
+
 export async function deleteDogProfile(ownerId: string, id: string) {
   const { error, data } = await supabase.from("dog_profiles").delete()
     .eq("owner_id", ownerId).eq("id", id).select("id");
@@ -47,9 +55,10 @@ export function useDogs() {
     enabled: !!user,
   });
   const mutation = useMutation({
-    mutationFn: async (action: { inputs: DogProfileInput[] } | { id: string }) => {
+    mutationFn: async (action: { inputs: DogProfileInput[] } | { id: string; input?: DogProfileInput }) => {
       if (!user) throw new Error("Connectez-vous pour enregistrer vos chiens.");
       if ("inputs" in action) await saveDogProfiles(user.id, action.inputs);
+      else if (action.input) await updateDogProfile(user.id, action.id, action.input);
       else await deleteDogProfile(user.id, action.id);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
@@ -60,6 +69,7 @@ export function useDogs() {
     error: user ? query.error : null,
     busy: mutation.isPending,
     addDogs: (inputs: DogProfileInput[]) => mutation.mutateAsync({ inputs }),
+    updateDog: (id: string, input: DogProfileInput) => mutation.mutateAsync({ id, input }),
     removeDog: (id: string) => mutation.mutateAsync({ id }),
     retry: () => query.refetch(),
   };

@@ -43,6 +43,7 @@ function client() {
         update: (v: unknown) => { q.op = "update"; q.values = v; return b; },
         delete: () => { q.op = "delete"; return b; },
         eq: (col: string, val: unknown) => { q.filters.push([col, val]); return b; },
+        in: (col: string, vals: unknown[]) => { q.filters.push([col, vals]); return b; },
         single: run,
         maybeSingle: run,
         then: (res: (v: Answer) => unknown, rej?: (e: unknown) => unknown) => run().then(res, rej),
@@ -109,7 +110,8 @@ beforeEach(() => {
     if (q.table === "booking_requests" && q.op === "select") return { data: row };
     if (q.table === "booking_requests" && q.op === "update") return { data: q.returning ? [{ id: BOOKING }] : null };
     if (q.table === "booking_requests" && q.op === "insert") return { data: row };
-    if (q.table === "host_listings" && q.op === "select") return { data: { blocked_dates: ["2026-11-20"] } };
+    if (q.table === "host_listings" && q.op === "select") return { data: { blocked_dates: ["2026-11-20"], sizes: ["petit", "moyen", "grand"], max_dogs: 2 } };
+    if (q.table === "dog_profiles" && q.op === "select") return { data: [{ id: "d1", name: "Nala", breed: "Lab", size: "grand", weight: "28", behavior: "" }] };
     return { data: null };
   };
 });
@@ -300,7 +302,8 @@ describe("Hold creation and card confirmation", () => {
   });
 
   it("cancels the PaymentIntent and deletes the request if linking fails", async () => {
-    db.answer = (q) => q.op === "insert" ? { data: row } : q.op === "update" ? { error: { message: "timeout" } } : { data: null };
+    const base = db.answer;
+    db.answer = (q) => q.op === "update" ? { error: { message: "timeout" } } : base(q);
     await expect(create()).rejects.toThrow("n’a pas pu être enregistrée");
     expect(stripePaths()).toEqual(["POST payment_intents", "POST payment_intents/pi_new/cancel"]);
     expect(db.queries.some((q) => q.op === "delete")).toBe(true);
