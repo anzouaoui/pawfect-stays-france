@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { destinationForRole, safePath } from "@/lib/auth-redirect";
+import { destinationForNewAccount, destinationForRole, safePath } from "@/lib/auth-redirect";
 
 describe("post-verification redirect by role", () => {
   it("only preserves safe internal destinations and avoids callback loops", () => {
@@ -15,6 +15,11 @@ describe("post-verification redirect by role", () => {
 
   it("sends travelers to their booking requests", () => {
     expect(destinationForRole("voyageur")).toBe("/mes-demandes");
+  });
+
+  it("starts a new traveler on the search and a new host on their listings", () => {
+    expect(destinationForNewAccount("voyageur")).toBe("/recherche");
+    expect(destinationForNewAccount("hote")).toBe("/mes-annonces");
   });
 
   it("defaults to the traveler space when no role is known", () => {

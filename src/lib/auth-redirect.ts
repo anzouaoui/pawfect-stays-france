@@ -18,6 +18,14 @@ export function destinationForRole(role: string | null | undefined): string {
   return role === "hote" ? "/mes-annonces" : "/mes-demandes";
 }
 
+/**
+ * First landing right after the role is chosen (signup, first Google sign-in): a new traveler
+ * has no request yet, so they start on the search; a new host starts on their listings.
+ */
+export function destinationForNewAccount(role: string | null | undefined): string {
+  return role === "hote" ? "/mes-annonces" : "/recherche";
+}
+
 export function isAppRole(v: unknown): v is AppRole {
   return v === "voyageur" || v === "hote";
 }

@@ -13,6 +13,7 @@ import { readAccountRole, saveFirstAccountRole } from "@/lib/auth-account";
 import {
   AUTH_REDIRECT_KEY,
   SIGNUP_ROLE_KEY,
+  destinationForNewAccount,
   destinationForRole,
   isAppRole,
   safePath,
@@ -49,10 +50,11 @@ function AuthPage() {
   const user = useSessionUser();
   const search = Route.useSearch();
 
-  const go = (savedRole: AppRole) => {
+  /** `isNew`: the role was recorded just now (first visit after signup or first Google sign-in). */
+  const go = (savedRole: AppRole, isNew: boolean) => {
     const dest = safePath(search.redirect) || safePath(localStorage.getItem(AUTH_REDIRECT_KEY));
     localStorage.removeItem(AUTH_REDIRECT_KEY);
-    navigate({ href: dest || destinationForRole(savedRole), replace: true });
+    navigate({ href: dest || (isNew ? destinationForNewAccount(savedRole) : destinationForRole(savedRole)), replace: true });
   };
 
   useEffect(() => {
@@ -71,7 +73,8 @@ function AuthPage() {
     setStage("checking");
     const resolve = async () => {
       try {
-        let savedRole = await readAccountRole(user.id);
+        const existingRole = await readAccountRole(user.id);
+        let savedRole = existingRole;
         const key = `${SIGNUP_ROLE_KEY}:${user.id}`;
         const pending = localStorage.getItem(key);
         if (!savedRole && isAppRole(pending)) savedRole = await saveFirstAccountRole(user.id, pending);
@@ -79,7 +82,7 @@ function AuthPage() {
         if (!savedRole) { setStage("role"); return; }
         localStorage.removeItem(key);
         queryClient.setQueryData(["account-role", user.id], savedRole);
-        go(savedRole);
+        go(savedRole, !existingRole);
       } catch {
         if (active) setStage("error");
       }
@@ -98,7 +101,7 @@ function AuthPage() {
       const saved = await saveFirstAccountRole(user.id, role);
       localStorage.removeItem(`${SIGNUP_ROLE_KEY}:${user.id}`);
       queryClient.setQueryData(["account-role", user.id], saved);
-      go(saved);
+      go(saved, true);
     } catch {
       toast.error("Impossible d’enregistrer votre choix. Réessayez.");
     } finally { setBusy(false); }
