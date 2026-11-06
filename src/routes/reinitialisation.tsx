@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { readAccountRole } from "@/lib/auth-account";
+import { destinationForRole } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +66,10 @@ function ResetPasswordPage() {
     await supabase.auth.signOut({ scope: "others" });
     setBusy(false);
     toast.success("Mot de passe modifié. Vous êtes connecté.");
-    navigate({ href: "/mes-demandes" });
+    // Back to the space matching the account role (hosts to their listings).
+    const { data } = await supabase.auth.getUser();
+    const role = data.user ? await readAccountRole(data.user.id).catch(() => null) : null;
+    navigate({ href: destinationForRole(role) });
   };
 
   return (
