@@ -67,7 +67,7 @@ describe("Inscription par e-mail — Voyageur", () => {
     expect(localStorage.getItem(AUTH_REDIRECT_KEY)).toBeNull();
   });
 
-  it("sans page d’origine, ouvre l’espace voyageur (/mes-demandes)", async () => {
+  it("sans page d’origine, ouvre la recherche (/recherche) pour un premier séjour", async () => {
     auth.signUp.mockImplementation(async () => {
       const user = { id: "traveler-2", email: "t@example.fr" };
       queueMicrotask(() => session.set(user));
@@ -76,7 +76,7 @@ describe("Inscription par e-mail — Voyageur", () => {
     await openSignup("Voyageur");
     fill("t@example.fr", "motdepasse1");
     fireEvent.click(screen.getByRole("button", { name: "Créer mon compte" }));
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ href: "/mes-demandes", replace: true }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ href: "/recherche", replace: true }));
   });
 
   it("refuse un e-mail invalide ou un mot de passe trop court sans appeler Supabase", async () => {
@@ -201,6 +201,15 @@ describe("Accès aux espaces dédiés (RoleResumeGuard)", () => {
     renderWithQuery(<RoleResumeGuard />);
     await new Promise((r) => setTimeout(r, 0));
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("premier passage Google : un nouveau voyageur sans page d’origine arrive sur la recherche", async () => {
+    session.set({ id: "google-3", email: "g3@example.fr" });
+    renderWithQuery(<AuthPage />);
+    await screen.findByRole("heading", { name: "Bienvenue sur PetInn" });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" })); // Voyageur is preselected
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ href: "/recherche", replace: true }));
+    expect(roles.get("google-3")).toBe("voyageur");
   });
 
   it("enregistre le rôle choisi à l’écran de bienvenue (compte Google) et renvoie vers la page d’origine", async () => {
