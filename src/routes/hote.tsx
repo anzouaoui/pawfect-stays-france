@@ -28,7 +28,10 @@ type Status = BookingRequest["status"];
 function Host() {
   const [local, setLocal] = useRequests();
   const user = useSessionUser();
-  const { rows } = useLiveRequests(user, "host");
+  const { rows, reload } = useLiveRequests(user, "host");
+  // Requests with a decision in flight: buttons disabled, so a double click sends one request.
+  const [deciding, setDeciding] = useState<Set<string>>(() => new Set());
+  const inFlight = useRef<Set<string>>(new Set());
   const [tab, setTab] = useState<Status>("en attente");
   const prevPending = useRef<Map<string, string>>(new Map());
   useEffect(() => {
@@ -53,10 +56,18 @@ function Host() {
   const decideFn = useServerFn(decideBooking);
   const decide = async (r: (typeof all)[number], status: "acceptée" | "refusée") => {
     if (!r.live) { setLocal(local.map((x) => (x.id === r.id ? { ...x, status } : x))); return; }
+    if (inFlight.current.has(r.id)) return;
+    inFlight.current.add(r.id);
+    setDeciding((cur) => new Set(cur).add(r.id));
     try {
       await decideFn({ data: { bookingId: r.id, action: status } });
       toast.success(status === "acceptée" ? "Demande acceptée, paiement encaissé" : "Demande refusée, empreinte libérée");
     } catch (e) { toast.error((e as Error).message || "Mise à jour impossible."); }
+    finally {
+      inFlight.current.delete(r.id);
+      setDeciding((cur) => { const next = new Set(cur); next.delete(r.id); return next; });
+      reload();
+    }
   };
 
   return (
@@ -75,8 +86,8 @@ function Host() {
       <div className="mt-6 space-y-4">
         {list.map((r) => <RequestCard key={r.id} r={r} host listing={LISTINGS.find((l) => l.id === r.listingId)}
           actions={r.status === "en attente" && <div className="mt-4 flex gap-2">
-            <button onClick={() => decide(r, "acceptée")} className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground">Accepter</button>
-            <button onClick={() => decide(r, "refusée")} className="rounded-xl border px-4 py-2 text-sm">Refuser</button></div>} />)}
+            <button disabled={deciding.has(r.id)} onClick={() => decide(r, "acceptée")} className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground disabled:opacity-60">{deciding.has(r.id) ? "Traitement…" : "Accepter"}</button>
+            <button disabled={deciding.has(r.id)} onClick={() => decide(r, "refusée")} className="rounded-xl border px-4 py-2 text-sm disabled:opacity-60">Refuser</button></div>} />)}
         {!list.length && <p className="text-muted-foreground">Aucune demande ici.</p>}
       </div>
     </div>

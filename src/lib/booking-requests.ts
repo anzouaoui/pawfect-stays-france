@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -40,6 +40,7 @@ export function useSessionUser() {
 export function useLiveRequests(user: User | null | undefined, role: "traveler" | "host") {
   const [rows, setRows] = useState<BookingRow[] | null>(null);
   const [error, setError] = useState(false);
+  const [version, setVersion] = useState(0);
   useEffect(() => {
     if (!user) { setRows(null); return; }
     const col = role === "traveler" ? "traveler_id" : "host_id";
@@ -56,6 +57,8 @@ export function useLiveRequests(user: User | null | undefined, role: "traveler" 
       .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests", filter: `${col}=eq.${user.id}` }, () => { load(); })
       .subscribe();
     return () => { active = false; supabase.removeChannel(channel); };
-  }, [user, role]);
-  return { rows, error };
+  }, [user, role, version]);
+  /** Reloads now, without waiting for the realtime event (e.g. right after a decision). */
+  const reload = useCallback(() => setVersion((v) => v + 1), []);
+  return { rows, error, reload };
 }

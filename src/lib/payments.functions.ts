@@ -41,6 +41,9 @@ async function stripe(path: string, body?: Record<string, string>, idempotencyKe
   return json;
 }
 
+/** Time the host has to accept a request (CGU, article 4). */
+export const ANSWER_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 async function admin() {
   return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 }
@@ -177,6 +180,12 @@ export const decideBooking = createServerFn({ method: "POST" })
     const isHost = row.host_id === context.userId, isTraveler = row.traveler_id === context.userId;
     if (data.action === "annulée" ? !isTraveler : !isHost) throw new Error("Action non autorisée");
     if (row.status !== "en attente") throw new Error("Demande déjà traitée");
+    // CGU: the host has 24 hours to answer. Enforced here even if the expiry cron has not run
+    // yet; refusing or cancelling stays possible so the hold can always be released.
+    const createdAt = Date.parse(row.created_at ?? "");
+    if (data.action === "acceptée" && Number.isFinite(createdAt) && Date.now() - createdAt > ANSWER_WINDOW_MS) {
+      throw new Error("Le délai de réponse de 24 h est dépassé : cette demande ne peut plus être acceptée.");
+    }
     let payment_status = row.payment_status;
     const db = await admin();
     if (data.action === "acceptée") {
