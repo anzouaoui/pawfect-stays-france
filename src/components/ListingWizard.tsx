@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Check, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EQUIPMENT, TYPES, type Size } from "@/lib/data";
-import { listingSchema, MAX_PHOTOS, PHOTO_BUCKET, photoUrls } from "@/lib/host-listings";
+import { MAX_PHOTOS, PHOTO_BUCKET, photoUrls } from "@/lib/host-listings";
+import { FENCE_HEIGHT, MIN_PHOTOS, fenceRule, splitFenceRule, validateWizard, type WizardInput } from "@/lib/listing-schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +20,20 @@ const DEFAULT_RULES = [
 ];
 const today = () => new Date().toISOString().slice(0, 10);
 
-type Form = { name: string; type: string; city: string; region: string; description: string; price: string; dogFee: string; cleaning: string; minNights: string; from: string; to: string; maxDogs: string; fenced: boolean };
+type Form = { name: string; type: string; city: string; region: string; description: string; price: string; dogFee: string; cleaning: string; minNights: string; from: string; to: string; maxDogs: string; fenced: boolean | null; fenceHeight: string };
 type Photo = { path: string; url: string };
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-const EMPTY: Form = { name: "", type: "", city: "", region: "", description: "", price: "", dogFee: "0", cleaning: "0", minNights: "1", from: "", to: "", maxDogs: "1", fenced: false };
+const EMPTY: Form = { name: "", type: "", city: "", region: "", description: "", price: "", dogFee: "0", cleaning: "0", minNights: "1", from: "", to: "", maxDogs: "1", fenced: null, fenceHeight: "" };
+/** "" → NaN (required field left empty); "1,5" → 1.5. */
+const num = (v: string) => (v.trim() === "" ? NaN : Number(v.replace(",", ".")));
+/** Optional fee: empty means 0. */
+const fee = (v: string) => (v.trim() === "" ? 0 : num(v));
+
+/** Inline error under a field; `id` is referenced by the field's aria-describedby. */
+function FieldError({ id, message }: { id: string; message?: string | undefined }) {
+  return message ? <p id={id} role="alert" className="text-sm text-destructive">{message}</p> : null;
+}
 
 export function ListingWizard({ userId, draftId }: { userId: string; draftId?: string | undefined }) {
   const navigate = useNavigate();
@@ -52,23 +62,41 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
       if (error || !data) { toast.error("Brouillon introuvable."); navigate({ to: "/mes-annonces" }); return; }
       setF({ name: data.name, type: data.type, city: data.city, region: data.region, description: data.description,
         price: Number(data.price_per_night) ? String(data.price_per_night) : "", dogFee: String(data.dog_fee_per_night), cleaning: String(data.cleaning_fee),
-        minNights: String(data.min_nights), from: data.available_from, to: data.available_to, maxDogs: String(data.max_dogs), fenced: data.fenced_garden });
+        minNights: String(data.min_nights), from: data.available_from, to: data.available_to, maxDogs: String(data.max_dogs),
+        // A draft stores false until answered: ask again rather than assume "no garden".
+        fenced: data.fenced_garden ? true : data.status === "publiée" ? false : null, fenceHeight: "" });
       setSizes(data.sizes as Size[]); setEquipment(data.equipment); setBlocked(data.blocked_dates);
-      const r = Array.isArray(data.dog_rules) ? (data.dog_rules as { title: string; description: string }[]) : [];
-      setRules(r.length ? r : DEFAULT_RULES);
+      const stored = Array.isArray(data.dog_rules) ? (data.dog_rules as { title: string; description: string }[]) : [];
+      const { rules: own, fenceHeightM } = splitFenceRule(stored);
+      if (fenceHeightM !== null) setF((cur) => ({ ...cur, fenceHeight: String(fenceHeightM).replace(".", ",") }));
+      setRules(own.length || stored.length ? own : DEFAULT_RULES);
       const urls = await photoUrls(data.photos);
       setPhotos(data.photos.map((path, i) => ({ path, url: urls[i] ?? "" })));
       setLoaded(true);
     })();
   }, [draftId, userId, navigate]);
 
-  const payload = useCallback(() => ({
-    name: f.name.trim(), type: f.type, city: f.city.trim(), region: f.region.trim(), description: f.description.trim(),
-    price_per_night: Number(f.price) || 0, dog_fee_per_night: Number(f.dogFee) || 0, cleaning_fee: Number(f.cleaning) || 0,
-    min_nights: Math.max(1, Number(f.minNights) || 1), available_from: f.from || today(), available_to: f.to || f.from || today(),
-    blocked_dates: blocked, fenced_garden: f.fenced, sizes, max_dogs: Math.max(1, Number(f.maxDogs) || 1), equipment,
-    dog_rules: rules, photos: photos.map((p) => p.path),
+  /** Exactly what the host entered, for validation before publishing. */
+  const wizardInput = useMemo((): WizardInput => ({
+    name: f.name, type: f.type, city: f.city, region: f.region, description: f.description,
+    price_per_night: num(f.price), dog_fee_per_night: fee(f.dogFee), cleaning_fee: fee(f.cleaning),
+    min_nights: num(f.minNights), available_from: f.from, available_to: f.to, blocked_dates: blocked,
+    fenced_garden: f.fenced, fence_height_m: f.fenced ? (f.fenceHeight.trim() ? num(f.fenceHeight) : null) : null,
+    sizes, max_dogs: num(f.maxDogs), equipment, dog_rules: rules, photos: photos.map((p) => p.path),
   }), [f, blocked, sizes, equipment, rules, photos]);
+
+  /** Draft row: incomplete values are replaced by safe defaults so autosave never fails on constraints. */
+  const payload = useCallback(() => {
+    const h = wizardInput.fence_height_m;
+    const fenceOk = wizardInput.fenced_garden === true && h !== null && h >= FENCE_HEIGHT.min && h <= FENCE_HEIGHT.max;
+    return {
+      name: f.name.trim(), type: f.type, city: f.city.trim(), region: f.region.trim(), description: f.description.trim(),
+      price_per_night: Number(f.price.replace(",", ".")) || 0, dog_fee_per_night: Math.max(0, Number(f.dogFee.replace(",", ".")) || 0), cleaning_fee: Math.max(0, Number(f.cleaning.replace(",", ".")) || 0),
+      min_nights: Math.min(60, Math.max(1, Math.round(Number(f.minNights) || 1))), available_from: f.from || today(), available_to: f.to || f.from || today(),
+      blocked_dates: blocked, fenced_garden: f.fenced === true, sizes, max_dogs: Math.min(10, Math.max(1, Math.round(Number(f.maxDogs) || 1))), equipment,
+      dog_rules: fenceOk ? [...rules, fenceRule(h)] : rules, photos: photos.map((p) => p.path),
+    };
+  }, [f, wizardInput, blocked, sizes, equipment, rules, photos]);
 
   const saveDraft = useCallback(async (): Promise<string | undefined> => {
     if (saving.current) await saving.current;
@@ -103,6 +131,14 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f, sizes, equipment, blocked, rules, photos, loaded]);
 
+  // Errors appear after a first publish attempt, then update live as the host fixes them.
+  const [showErrors, setShowErrors] = useState(false);
+  const check = useMemo(() => validateWizard(wizardInput, today()), [wizardInput]);
+  const errors: Record<string, string> = showErrors && !check.ok ? check.errors : {};
+  const stepHasError = (i: number) => showErrors && !check.ok && check.stepsWithErrors.includes(i);
+  const err = (key: string) => errors[key];
+  const invalid = (key: string) => (errors[key] ? { "aria-invalid": true, "aria-describedby": `err-${key}` } : {});
+
   const goTo = async (n: number) => { await saveDraft(); setStep(n); window.scrollTo({ top: 0 }); };
 
   const addFiles = async (list: FileList | File[] | null) => {
@@ -134,14 +170,14 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
   const makeCover = (i: number) => setPhotos((cur) => [cur[i]!, ...cur.filter((_, j) => j !== i)]);
 
   const publish = async () => {
-    const parsed = listingSchema.safeParse({
-      name: f.name, type: f.type, city: f.city, region: f.region, description: f.description,
-      price_per_night: f.price === "" ? NaN : Number(f.price), dog_fee_per_night: Number(f.dogFee || 0), cleaning_fee: Number(f.cleaning || 0),
-      min_nights: Number(f.minNights || 1), available_from: f.from, available_to: f.to, blocked_dates: blocked,
-      fenced_garden: f.fenced, sizes, max_dogs: Number(f.maxDogs || 1), equipment, dog_rules: rules,
-    });
-    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Formulaire incomplet"); return; }
-    if (photos.length < 3) { toast.error("Ajoutez au moins 3 photos."); setStep(1); return; }
+    if (!check.ok) {
+      setShowErrors(true);
+      setStep(check.firstStep);
+      window.scrollTo({ top: 0 });
+      const n = Object.keys(check.errors).length;
+      toast.error(`${n} point${n > 1 ? "s" : ""} à corriger avant de publier`, { description: Object.values(check.errors)[0] });
+      return;
+    }
     setPublishing(true);
     dirty.current = true;
     const savedId = await saveDraft();
@@ -153,7 +189,7 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
     navigate({ to: "/mes-annonces" });
   };
 
-  const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF((cur) => ({ ...cur, [k]: e.target.value }));
+  const set = (k: Exclude<keyof Form, "fenced">) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF((cur) => ({ ...cur, [k]: e.target.value }));
   const toggleIn = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   if (!loaded) return <p className="mx-auto max-w-3xl px-4 py-10 text-muted-foreground">Chargement du brouillon…</p>;
@@ -176,8 +212,8 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
         {STEPS.map((s, i) => (
           <li key={s}>
             <button type="button" onClick={() => goTo(i)} aria-current={i === step ? "step" : undefined}
-              className={`rounded-full border px-3 py-1 text-sm ${i === step ? "bg-primary text-primary-foreground" : i < step ? "bg-muted" : ""}`}>
-              {i + 1}. {s}
+              className={`rounded-full border px-3 py-1 text-sm ${i === step ? "bg-primary text-primary-foreground" : i < step ? "bg-muted" : ""} ${stepHasError(i) ? "border-destructive text-destructive" : ""} ${stepHasError(i) && i === step ? "text-primary-foreground" : ""}`}>
+              {i + 1}. {s}{stepHasError(i) && <span aria-label=" — à corriger"> ⚠</span>}
             </button>
           </li>
         ))}
@@ -187,18 +223,19 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
         <h2 className="font-display text-xl font-bold">{STEPS[step]}</h2>
 
         {step === 0 && <>
-          <div className="space-y-1.5"><Label htmlFor="name">Nom de l'annonce</Label><Input id="name" value={f.name} onChange={set("name")} maxLength={120} placeholder="Ex. Gîte du Moulin" /></div>
+          <div className="space-y-1.5"><Label htmlFor="name">Nom de l'annonce</Label><Input id="name" value={f.name} onChange={set("name")} maxLength={120} placeholder="Ex. Gîte du Moulin" {...invalid("name")} /><FieldError id="err-name" message={err("name")} /></div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5"><Label htmlFor="type">Type</Label>
-              <select id="type" value={f.type} onChange={set("type")} className="h-9 w-full rounded-md border bg-background px-3 text-sm"><option value="">Choisir…</option>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></div>
-            <div className="space-y-1.5"><Label htmlFor="city">Ville</Label><Input id="city" value={f.city} onChange={set("city")} maxLength={80} /></div>
-            <div className="space-y-1.5"><Label htmlFor="region">Région</Label><Input id="region" value={f.region} onChange={set("region")} maxLength={80} /></div>
+              <select id="type" value={f.type} onChange={set("type")} className="h-9 w-full rounded-md border bg-background px-3 text-sm" {...invalid("type")}><option value="">Choisir…</option>{TYPES.map((t) => <option key={t}>{t}</option>)}</select><FieldError id="err-type" message={err("type")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="city">Ville</Label><Input id="city" value={f.city} onChange={set("city")} maxLength={80} {...invalid("city")} /><FieldError id="err-city" message={err("city")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="region">Région</Label><Input id="region" value={f.region} onChange={set("region")} maxLength={80} {...invalid("region")} /><FieldError id="err-region" message={err("region")} /></div>
           </div>
-          <div className="space-y-1.5"><Label htmlFor="desc">Description</Label><Textarea id="desc" rows={4} value={f.description} onChange={set("description")} maxLength={2000} /></div>
+          <div className="space-y-1.5"><Label htmlFor="desc">Description</Label><Textarea id="desc" rows={4} value={f.description} onChange={set("description")} maxLength={2000} {...invalid("description")} /><FieldError id="err-description" message={err("description")} /></div>
         </>}
 
         {step === 1 && <>
-          <p className="text-sm text-muted-foreground">Entre 3 et {MAX_PHOTOS} photos réelles. Glissez-déposez vos images ou cliquez pour les choisir. La première est la photo principale.</p>
+          <p className="text-sm text-muted-foreground">Entre {MIN_PHOTOS} et {MAX_PHOTOS} photos réelles, obligatoires pour publier. Glissez-déposez vos images ou cliquez pour les choisir. La première est la photo principale.</p>
+          <FieldError id="err-photos" message={err("photos")} />
           <label
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -228,17 +265,17 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
         {step === 2 && <>
           <p className="text-sm text-muted-foreground">La commission de service PetInn est payée par le voyageur, elle ne s'ajoute pas à vos tarifs.</p>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label htmlFor="price">Prix par nuit (€)</Label><Input id="price" type="number" min={1} value={f.price} onChange={set("price")} /></div>
-            <div className="space-y-1.5"><Label htmlFor="dogfee">Supplément par chien et par nuit (€)</Label><Input id="dogfee" type="number" min={0} value={f.dogFee} onChange={set("dogFee")} /></div>
-            <div className="space-y-1.5"><Label htmlFor="cleaning">Frais de ménage (€)</Label><Input id="cleaning" type="number" min={0} value={f.cleaning} onChange={set("cleaning")} /></div>
-            <div className="space-y-1.5"><Label htmlFor="min">Séjour minimum (nuits)</Label><Input id="min" type="number" min={1} max={60} value={f.minNights} onChange={set("minNights")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="price">Prix par nuit (€)</Label><Input id="price" type="number" inputMode="decimal" min={1} step="0.01" required value={f.price} onChange={set("price")} {...invalid("price_per_night")} /><FieldError id="err-price_per_night" message={err("price_per_night")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="dogfee">Supplément par chien et par nuit (€)</Label><Input id="dogfee" type="number" inputMode="decimal" min={0} step="0.01" value={f.dogFee} onChange={set("dogFee")} {...invalid("dog_fee_per_night")} /><FieldError id="err-dog_fee_per_night" message={err("dog_fee_per_night")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="cleaning">Frais de ménage (€)</Label><Input id="cleaning" type="number" inputMode="decimal" min={0} step="0.01" value={f.cleaning} onChange={set("cleaning")} {...invalid("cleaning_fee")} /><FieldError id="err-cleaning_fee" message={err("cleaning_fee")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="min">Séjour minimum (nuits)</Label><Input id="min" type="number" inputMode="numeric" min={1} max={60} step={1} value={f.minNights} onChange={set("minNights")} {...invalid("min_nights")} /><FieldError id="err-min_nights" message={err("min_nights")} /></div>
           </div>
         </>}
 
         {step === 3 && <>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label htmlFor="from">Ouvert à partir du</Label><Input id="from" type="date" value={f.from} onChange={set("from")} /></div>
-            <div className="space-y-1.5"><Label htmlFor="to">Jusqu'au</Label><Input id="to" type="date" min={f.from} value={f.to} onChange={set("to")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="from">Ouvert à partir du</Label><Input id="from" type="date" required value={f.from} onChange={set("from")} {...invalid("available_from")} /><FieldError id="err-available_from" message={err("available_from")} /></div>
+            <div className="space-y-1.5"><Label htmlFor="to">Jusqu'au</Label><Input id="to" type="date" required min={f.from || today()} value={f.to} onChange={set("to")} {...invalid("available_to")} /><FieldError id="err-available_to" message={err("available_to")} /></div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="block">Dates indisponibles</Label>
@@ -247,18 +284,34 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
               <Button type="button" variant="outline" onClick={() => { if (blockInput && !blocked.includes(blockInput)) setBlocked([...blocked, blockInput].sort()); setBlockInput(""); }}>Bloquer</Button>
             </div>
             <div className="flex flex-wrap gap-2">{blocked.map((d) => (
-              <button type="button" key={d} onClick={() => setBlocked(blocked.filter((x) => x !== d))} className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs">{new Date(d).toLocaleDateString("fr-FR")}<X className="h-3 w-3" /></button>))}</div>
+              <button type="button" key={d} onClick={() => setBlocked(blocked.filter((x) => x !== d))} aria-label={`Débloquer le ${new Date(`${d}T00:00:00Z`).toLocaleDateString("fr-FR", { timeZone: "UTC" })}`} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs ${(f.from && d < f.from) || (f.to && d > f.to) ? "border-destructive text-destructive" : ""}`}>{new Date(`${d}T00:00:00Z`).toLocaleDateString("fr-FR", { timeZone: "UTC" })}<X className="h-3 w-3" /></button>))}</div>
+            <FieldError id="err-blocked_dates" message={err("blocked_dates")} />
           </div>
         </>}
 
         {step === 4 && <>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label htmlFor="maxdogs">Nombre de chiens maximum</Label><Input id="maxdogs" type="number" min={1} max={10} value={f.maxDogs} onChange={set("maxDogs")} /></div>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm"><Checkbox checked={f.fenced} onCheckedChange={(v) => setF((cur) => ({ ...cur, fenced: v === true }))} />Jardin entièrement clôturé</label>
-          </div>
+          <div className="space-y-1.5 sm:w-1/2"><Label htmlFor="maxdogs">Nombre de chiens maximum</Label><Input id="maxdogs" type="number" inputMode="numeric" min={1} max={10} step={1} value={f.maxDogs} onChange={set("maxDogs")} {...invalid("max_dogs")} /><FieldError id="err-max_dogs" message={err("max_dogs")} /></div>
+          <fieldset className="space-y-2" {...invalid("fenced_garden")}>
+            <legend className="text-sm font-medium">Le jardin est-il entièrement clôturé ?</legend>
+            <div role="radiogroup" aria-label="Jardin entièrement clôturé" className="flex flex-wrap gap-2">
+              {([[true, "Oui, entièrement clôturé"], [false, "Non, ou pas de jardin"]] as const).map(([v, label]) => (
+                <button type="button" key={String(v)} role="radio" aria-checked={f.fenced === v} onClick={() => setF((cur) => ({ ...cur, fenced: v }))}
+                  className={`rounded-full border px-4 py-1.5 text-sm ${f.fenced === v ? "bg-primary text-primary-foreground" : ""}`}>{label}</button>))}
+            </div>
+            <FieldError id="err-fenced_garden" message={err("fenced_garden")} />
+          </fieldset>
+          {f.fenced === true && (
+            <div className="space-y-1.5 sm:w-1/2">
+              <Label htmlFor="fence">Hauteur de la clôture (m)</Label>
+              <Input id="fence" type="number" inputMode="decimal" min={FENCE_HEIGHT.min} max={FENCE_HEIGHT.max} step="0.05" placeholder="Ex. 1,50" value={f.fenceHeight} onChange={set("fenceHeight")} {...invalid("fence_height_m")} />
+              <p className="text-xs text-muted-foreground">Affichée aux voyageurs pour qu’ils sachent si leur chien peut sauter la clôture.</p>
+              <FieldError id="err-fence_height_m" message={err("fence_height_m")} />
+            </div>
+          )}
           <div><p className="mb-2 text-sm font-medium">Gabarits acceptés</p>
-            <div className="flex flex-wrap gap-2">{SIZES.map((s) => (
-              <button type="button" key={s} onClick={() => setSizes(toggleIn(sizes, s))} className={`rounded-full border px-4 py-1.5 text-sm capitalize ${sizes.includes(s) ? "bg-primary text-primary-foreground" : ""}`}>{s}</button>))}</div></div>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Gabarits acceptés" {...invalid("sizes")}>{SIZES.map((s) => (
+              <button type="button" key={s} aria-pressed={sizes.includes(s)} onClick={() => setSizes(toggleIn(sizes, s))} className={`rounded-full border px-4 py-1.5 text-sm capitalize ${sizes.includes(s) ? "bg-primary text-primary-foreground" : ""}`}>{s}</button>))}</div>
+            <FieldError id="err-sizes" message={err("sizes")} /></div>
           <div><p className="mb-2 text-sm font-medium">Équipements fournis</p>
             <div className="grid gap-2 sm:grid-cols-2">{EQUIPMENT.map((e) => (
               <label key={e} className="flex items-center gap-2 text-sm"><Checkbox checked={equipment.includes(e)} onCheckedChange={() => setEquipment(toggleIn(equipment, e))} />{e}</label>))}</div></div>
@@ -268,12 +321,16 @@ export function ListingWizard({ userId, draftId }: { userId: string; draftId?: s
           {rules.map((r, i) => (
             <div key={i} className="space-y-2 rounded-xl border p-3">
               <div className="flex gap-2">
-                <Input aria-label={`Titre de la règle ${i + 1}`} value={r.title} maxLength={80} placeholder="Titre" onChange={(e) => setRules(rules.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
+                <Input aria-label={`Titre de la règle ${i + 1}`} value={r.title} maxLength={80} placeholder="Titre" {...invalid(`dog_rules.${i}.title`)} onChange={(e) => setRules(rules.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
                 <Button type="button" variant="ghost" size="icon" aria-label={`Supprimer la règle ${i + 1}`} onClick={() => setRules(rules.filter((_, j) => j !== i))}><Trash2 /></Button>
               </div>
-              <Textarea aria-label={`Description de la règle ${i + 1}`} rows={2} value={r.description} maxLength={500} placeholder="Détail de la règle" onChange={(e) => setRules(rules.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} />
+              <FieldError id={`err-dog_rules.${i}.title`} message={err(`dog_rules.${i}.title`)} />
+              <Textarea aria-label={`Description de la règle ${i + 1}`} rows={2} value={r.description} maxLength={500} placeholder="Détail de la règle" {...invalid(`dog_rules.${i}.description`)} onChange={(e) => setRules(rules.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} />
+              <FieldError id={`err-dog_rules.${i}.description`} message={err(`dog_rules.${i}.description`)} />
             </div>
           ))}
+          {f.fenced === true && <p className="text-sm text-muted-foreground">La règle « Clôture du jardin » (hauteur de la clôture) sera ajoutée automatiquement.</p>}
+          <FieldError id="err-dog_rules" message={err("dog_rules")} />
           <Button type="button" variant="outline" onClick={() => setRules([...rules, { title: "", description: "" }])}><Plus />Ajouter une règle</Button>
         </>}
       </section>
