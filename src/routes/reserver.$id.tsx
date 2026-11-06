@@ -11,6 +11,7 @@ import { confirmHold, createBookingWithHold } from "@/lib/payments.functions";
 import { CardHoldForm } from "@/components/CardHoldForm";
 import { BookingConsent, CARD_HOLD_NOTICE } from "@/components/BookingConsent";
 import { TERMS_VERSION } from "@/lib/legal";
+import { checkDogsForListing } from "@/lib/booking-eligibility";
 import { useSessionUser } from "@/lib/booking-requests";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
@@ -51,10 +52,11 @@ function Booking() {
   const dogFees = h ? nights * h.dogFee * chosen.length : 0;
   const cleaning = h && nights > 0 ? h.cleaningFee : 0;
   const subtotal = nights * l.price + dogFees + cleaning; const fee = Math.round(subtotal * SERVICE_FEE_RATE);
-  const tooBig = chosen.some((d) => !l.sizes.includes(d.size));
+  const dogCheck = checkDogsForListing({ sizes: l.sizes, maxDogs: l.maxDogs }, chosen);
+  const tooBig = !dogCheck.ok && dogCheck.reason === "size_not_accepted";
   const tooShort = !!h && nights > 0 && nights < h.minNights;
   const unavailable = nights > 0 && !isAvailable(l, inD, outD);
-  const ok = !dogsLoading && !dogsError && nights > 0 && !tooShort && !unavailable && chosen.length > 0 && chosen.length <= l.maxDogs && !tooBig;
+  const ok = !dogsLoading && !dogsError && nights > 0 && !tooShort && !unavailable && dogCheck.ok;
 
   const user = useSessionUser();
   const [busy, setBusy] = useState(false);
@@ -116,8 +118,8 @@ function Booking() {
             )) : <p className="mt-1 text-sm text-muted-foreground">Aucun passeport. <Link to="/passeport" className="underline">Créer un passeport canin</Link></p>}
             {tooShort && <p className="mt-2 text-sm text-destructive">Séjour minimum : {h?.minNights} nuits.</p>}
             {unavailable && <p className="mt-2 text-sm text-destructive">Le logement n’est pas disponible sur ces dates.</p>}
-            {tooBig && <p className="mt-2 text-sm text-destructive">Ce gabarit n'est pas accepté ici.</p>}
-            {chosen.length > l.maxDogs && <p className="mt-2 text-sm text-destructive">Maximum {l.maxDogs} chien(s).</p>}
+            <p className="mt-1 text-xs text-muted-foreground">Gabarits acceptés : {l.sizes.join(", ")} · {l.maxDogs} chien{l.maxDogs > 1 ? "s" : ""} maximum.</p>
+            {!dogCheck.ok && (dogCheck.reason !== "no_dog" || nights > 0) && dogs.length > 0 && <p className="mt-2 text-sm text-destructive" role="alert">{dogCheck.message}</p>}
             <h2 className="mt-6 font-display text-xl font-semibold">3. Un mot pour l’hôte</h2>
             <textarea value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 500))} placeholder="Optionnel" className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-sm" rows={3} />
             {h && user === null ? (

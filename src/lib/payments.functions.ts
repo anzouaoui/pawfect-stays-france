@@ -87,9 +87,29 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
       cfg.logStripeConfigError(check);
       throw new Error(cfg.BOOKING_PAYMENT_UNAVAILABLE_MESSAGE);
     }
+    // Dog welcome rules are enforced here too, against the traveler's own passports (RLS +
+    // owner filter): the sizes come from the database, not from what the browser sent.
+    const dogIds = data.dogs.map((d) => d.id);
+    if (new Set(dogIds).size !== dogIds.length) throw new Error("Un même chien a été sélectionné plusieurs fois.");
+    const { data: listing } = await context.supabase.from("host_listings").select("sizes, max_dogs")
+      .eq("id", data.listingId).eq("status", "publiée").maybeSingle();
+    if (!listing) throw new Error("Ce logement n’est plus disponible.");
+    const { data: owned, error: dogsError } = await context.supabase.from("dog_profiles")
+      .select("id, name, breed, size, weight, behavior").eq("owner_id", context.userId).in("id", dogIds);
+    if (dogsError) throw new Error("Vos passeports canins n’ont pas pu être vérifiés. Réessayez.");
+    const dogs = dogIds.map((id) => (owned ?? []).find((d) => d.id === id));
+    if (dogs.some((d) => !d)) throw new Error("Un des chiens sélectionnés n’est plus dans votre passeport canin.");
+    // Explicit fields only: the booking keeps an independent copy of each passport.
+    const snapshot = (dogs as NonNullable<(typeof dogs)[number]>[]).map((d) => ({
+      id: d.id, name: d.name, breed: d.breed, size: d.size, weight: Number(d.weight), behavior: d.behavior ?? "",
+    }));
+    const { checkDogsForListing } = await import("@/lib/booking-eligibility");
+    const eligibility = checkDogsForListing({ sizes: listing.sizes, maxDogs: listing.max_dogs }, snapshot);
+    if (!eligibility.ok) throw new Error(eligibility.message);
+
     const { data: row, error } = await context.supabase.from("booking_requests").insert({
       listing_id: data.listingId, host_id: "00000000-0000-0000-0000-000000000000",
-      check_in: data.checkIn, check_out: data.checkOut, dogs: data.dogs, message: data.message,
+      check_in: data.checkIn, check_out: data.checkOut, dogs: snapshot, message: data.message,
     }).select().single();
     if (error || !row) throw new Error(error?.message.includes("propre logement") ? "Vous ne pouvez pas réserver votre propre logement." : "Demande refusée : vérifiez les dates et vos chiens.");
     const amount = Math.round((Number(row.subtotal) + Number(row.fee)) * 100);
