@@ -175,6 +175,67 @@ describe("email configuration check", () => {
     expect(await checkEmailConnection({ live: true, env, fetchImpl: fetchMock })).toMatchObject({ ok: false, api: { keyValid: false } });
   });
 
+  it("rejects senders on domains that Resend cannot verify", () => {
+    for (const from of ["anouk@gmail.com", "PetInn <petinn@outlook.fr>", "contact@pawfect-stays-france.lovable.app"]) {
+      const check = readEmailConfig({ RESEND_API_KEY: "re_x", EMAIL_FROM: from });
+      expect(check.ok).toBe(false);
+      expect(!check.ok && check.errors[0]).toContain("ne peut pas être vérifié");
+    }
+    // A custom domain merely containing a public name stays allowed.
+    expect(readEmailConfig({ RESEND_API_KEY: "re_x", EMAIL_FROM: "contact@gmail-petinn.fr" }).ok).toBe(true);
+  });
+
+  it("strict mode refuses the resend.dev sandbox sender; default mode only warns", async () => {
+    const env = { RESEND_API_KEY: "re_x", EMAIL_FROM: "PetInn <onboarding@resend.dev>" };
+    const lax = readEmailConfig(env);
+    expect(lax.ok && lax.warnings[0]).toContain("resend.dev");
+    const strict = readEmailConfig(env, { strict: true });
+    expect(strict.ok).toBe(false);
+    expect(!strict.ok && strict.errors[0]).toContain("resend.dev");
+    const report = await checkEmailConnection({ live: true, strict: true, env, fetchImpl: fetchMock });
+    expect(report.ok).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("live check names the DNS records still pending on an unverified domain", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json(200, { data: [{ id: "dom_1", name: "petinn.fr", status: "pending" }] }))
+      .mockResolvedValueOnce(json(200, {
+        id: "dom_1", name: "petinn.fr", status: "pending",
+        records: [
+          { record: "SPF", type: "MX", name: "send", status: "verified" },
+          { record: "SPF", type: "TXT", name: "send", status: "pending" },
+          { record: "DKIM", type: "TXT", name: "resend._domainkey", status: "failed" },
+        ],
+      }));
+    const env = { RESEND_API_KEY: "re_x", EMAIL_FROM: "contact@petinn.fr" };
+    const report = await checkEmailConnection({ live: true, env, fetchImpl: fetchMock });
+    expect(report.ok).toBe(false);
+    expect(fetchMock.mock.calls[1]![0]).toBe("https://api.resend.com/domains/dom_1");
+    expect(report.api?.pendingRecords).toEqual([
+      { record: "SPF", type: "TXT", name: "send", status: "pending" },
+      { record: "DKIM", type: "TXT", name: "resend._domainkey", status: "failed" },
+    ]);
+    expect(report.errors).toEqual(expect.arrayContaining([expect.stringContaining("DKIM (TXT resend._domainkey) : failed")]));
+  });
+
+  it("live check keeps the main error when the domain detail call fails", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json(200, { data: [{ id: "dom_1", name: "petinn.fr", status: "not_started" }] }))
+      .mockRejectedValueOnce(new Error("network down"));
+    const env = { RESEND_API_KEY: "re_x", EMAIL_FROM: "contact@petinn.fr" };
+    const report = await checkEmailConnection({ live: true, env, fetchImpl: fetchMock });
+    expect(report).toMatchObject({ ok: false, api: { reachable: true, keyValid: true, domainVerified: false } });
+    expect(report.errors).toEqual(["Le domaine d'expédition petinn.fr n'est pas vérifié dans Resend."]);
+  });
+
+  it("does not email anyone when EMAIL_FROM is on a public mailbox domain", async () => {
+    vi.stubEnv("EMAIL_FROM", "PetInn <petinn.contact@gmail.com>");
+    const result = await notifyBooking("host-new-request", row);
+    expect(result).toMatchObject({ sent: false, reason: "not_configured" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("live check accepts a sending-only key with a warning", async () => {
     fetchMock.mockResolvedValue(json(401, { name: "restricted_api_key", message: "This API key is restricted to only send emails" }));
     const env = { RESEND_API_KEY: "re_x", EMAIL_FROM: "contact@petinn.fr" };
