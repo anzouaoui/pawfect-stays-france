@@ -7,6 +7,7 @@ vi.mock("@tanstack/react-router", async (orig) => ({
 }));
 
 import { Route } from "@/routes/cgu";
+import { CONSUMER_MEDIATOR } from "@/lib/legal";
 
 const Page = Route.options.component as () => React.JSX.Element;
 
@@ -40,12 +41,14 @@ describe("CGU — consumer mediation (art. L. 612-1 Code de la consommation)", (
     expect(within(s).getByRole("link", { name: "contact@bricapattes.fr" })).toHaveAttribute("href", "mailto:contact@bricapattes.fr");
   });
 
-  it("lists every mediator detail, each still to complete until a mediator is signed", () => {
+  it("lists every mediator detail, each still to complete until a mediator is signed (CONSUMER_MEDIATOR)", () => {
     const s = section10(render(<Page />).container);
     for (const label of ["Entité de médiation", "Adresse postale", "E-mail", "Site internet", "Saisine en ligne"]) {
       const li = [...s.querySelectorAll("li")].find((l) => l.textContent?.startsWith(`${label} :`));
       expect(li, label).toBeDefined();
-      expect(li!.querySelector("mark[data-placeholder]")?.textContent, label).toMatch(/^\[À COMPLÉTER : .+\]$/);
+      const mark = li!.querySelector("mark[data-placeholder]");
+      if (CONSUMER_MEDIATOR === null) expect(mark?.textContent, label).toMatch(/^\[À COMPLÉTER : .+\]$/);
+      else expect(mark, label).toBeNull();
     }
   });
 
