@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
+import type { LegalPendingId } from "@/lib/legal";
 
 /**
  * Information still to be provided by the publisher. Rendered highlighted so a missing
  * value cannot go unnoticed; search the codebase for "À COMPLÉTER" before going live.
+ * `id` links the marker to its entry in LEGAL_PENDING (src/lib/legal.ts).
  */
-export function LegalTodo({ children }: { children: ReactNode }) {
+export function LegalTodo({ id, children }: { id: LegalPendingId; children: ReactNode }) {
   return (
-    <mark data-placeholder className="rounded bg-yellow-200 px-1 text-yellow-950 dark:bg-yellow-300">
+    <mark data-placeholder={id} className="rounded bg-yellow-200 px-1 text-yellow-950 dark:bg-yellow-300">
       [À COMPLÉTER : {children}]
     </mark>
   );
