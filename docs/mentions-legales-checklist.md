@@ -27,7 +27,7 @@ cette liste correspondent, et que chaque élément figure ci-dessous.
 | `editeur-telephone` | Numéro de téléphone de l'éditeur | /mentions-legales | LCEN art. 6-III-1 a) | **Oui** | Numéro professionnel dédié (ligne mobile ou numéro virtuel). Remplace « communiqué sur demande ». |
 | `hebergeur-telephone` | Téléphone de l'hébergeur Lovable Labs Sweden AB | /mentions-legales | LCEN art. 6-III-1 d) | **Oui** | Support Lovable / page légale de Lovable. |
 | `hebergeur-region` | Région d'hébergement des données | /mentions-legales | RGPD art. 13 | Non (recommandé) | Paramètres du projet Lovable Cloud ou support Lovable. |
-| `mediateur` | Médiateur de la consommation : nom, adresse postale, e-mail, site, lien de saisine | /mentions-legales, /cgu (art. 10) | C. conso. L. 612-1, L. 616-1 | **Oui** | Adhésion à un médiateur référencé par la CECMC (liste sur economie.gouv.fr) ; conserver la convention signée. |
+| `mediateur` | Médiateur de la consommation : nom, adresse postale, e-mail, site, lien de saisine | /mentions-legales, /cgu (art. 10) | C. conso. L. 612-1, L. 616-1 | **Oui** | Adhésion à un médiateur référencé par la CECMC ; renseigner `CONSUMER_MEDIATOR` (legal.ts). Procédure : [mediation-consommation.md](mediation-consommation.md). |
 
 ## Remplir une information
 

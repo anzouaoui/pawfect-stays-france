@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LEGAL_VERSIONS, legalDate } from "@/lib/legal";
-import { LegalPage, LegalTodo } from "@/components/LegalPage";
+import { LegalPage } from "@/components/LegalPage";
+import { MediatorDetailsList } from "@/components/ConsumerMediator";
 
 export const Route = createFileRoute("/cgu")({
   head: () => ({
@@ -77,13 +78,7 @@ function Cgu() {
       <p>Conformément aux articles L. 611-1 et suivants et L. 612-1 et suivants du Code de la consommation, le consommateur a le droit de recourir gratuitement à un médiateur de la consommation en vue de la résolution amiable d’un litige qui l’oppose à PetInn et qui n’a pas pu être réglé à l’amiable.</p>
       <p>Le médiateur ne peut être saisi que si le consommateur a d’abord tenté de résoudre le litige directement auprès de PetInn par une réclamation écrite, et si sa demande est introduite auprès du médiateur dans un délai d’un an à compter de cette réclamation. Le recours à la médiation est facultatif : chaque partie reste libre d’accepter ou de refuser la solution proposée, et de saisir ensuite les juridictions compétentes.</p>
       <p>PetInn a désigné le médiateur de la consommation suivant :</p>
-      <ul>
-        <li>Entité de médiation : <LegalTodo id="mediateur">nom du médiateur agréé auquel l’éditeur a adhéré</LegalTodo></li>
-        <li>Adresse postale : <LegalTodo id="mediateur">adresse postale du médiateur</LegalTodo></li>
-        <li>E-mail : <LegalTodo id="mediateur">adresse e-mail du médiateur</LegalTodo></li>
-        <li>Site internet : <LegalTodo id="mediateur">site officiel du médiateur (lien)</LegalTodo></li>
-        <li>Saisine en ligne : <LegalTodo id="mediateur">lien direct vers le formulaire de saisine en ligne du médiateur</LegalTodo></li>
-      </ul>
+      <MediatorDetailsList />
 
       <h3 className="mt-6 font-semibold">Droit applicable</h3>
       <p>Les présentes conditions sont soumises au droit français. À défaut de résolution amiable, le litige est porté devant les juridictions compétentes dans les conditions prévues par la loi ; le consommateur peut notamment saisir, à son choix, la juridiction du lieu où il demeurait au moment de la conclusion du contrat ou de la survenance du fait dommageable.</p>

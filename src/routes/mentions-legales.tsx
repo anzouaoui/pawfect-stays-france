@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, LegalTodo as Todo } from "@/components/LegalPage";
+import { MediatorInline } from "@/components/ConsumerMediator";
 
 export const Route = createFileRoute("/mentions-legales")({
   head: () => ({
@@ -132,8 +133,7 @@ function MentionsLegales() {
       <p>
         Conformément aux articles L. 612-1 et suivants du Code de la consommation, tout consommateur peut recourir
         gratuitement à un médiateur de la consommation en vue de la résolution amiable d’un litige, après réclamation
-        écrite préalable auprès de PetInn restée sans réponse satisfaisante. Médiateur : <Todo id="mediateur">nom, adresse postale et
-        site internet du médiateur auquel l’éditeur a adhéré</Todo>. Les modalités de saisine sont détaillées à
+        écrite préalable auprès de PetInn restée sans réponse satisfaisante. Médiateur : <MediatorInline />. Les modalités de saisine sont détaillées à
         l’article 10 des <Link to="/cgu" className="underline">conditions générales d’utilisation</Link>.
       </p>
 

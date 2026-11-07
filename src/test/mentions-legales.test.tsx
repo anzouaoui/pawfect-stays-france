@@ -7,6 +7,7 @@ vi.mock("@tanstack/react-router", async (orig) => ({
 }));
 
 import { Route } from "@/routes/mentions-legales";
+import { CONSUMER_MEDIATOR } from "@/lib/legal";
 
 const Page = Route.options.component as () => React.JSX.Element;
 
@@ -38,14 +39,15 @@ describe("Mentions légales page", () => {
     expect(container.textContent).not.toMatch(/Capital social|marque déposée/);
   });
 
-  it("names the host and keeps only the 3 facts still unknown as visible placeholders", () => {
+  it("names the host and keeps only the facts still unknown as visible placeholders", () => {
     const { container } = render(<Page />);
     expect(container.textContent).toContain("Lovable Labs Sweden AB, Regeringsgatan 25, 111 53 Stockholm, Suède");
     expect(container.textContent).toContain("générées par intelligence artificielle");
     const placeholders = [...container.querySelectorAll("mark[data-placeholder]")].map((p) => p.textContent);
     for (const p of placeholders) expect(p).toMatch(/^\[À COMPLÉTER : .+\]$/);
-    expect(placeholders).toHaveLength(3);
-    expect(placeholders.join(" ")).toMatch(/téléphone de l’hébergeur.*région.*médiateur/s);
+    // The mediator marker goes away once CONSUMER_MEDIATOR is filled (src/lib/legal.ts).
+    expect(placeholders).toHaveLength(CONSUMER_MEDIATOR ? 2 : 3);
+    expect(placeholders.join(" ")).toMatch(CONSUMER_MEDIATOR ? /téléphone de l’hébergeur.*région/s : /téléphone de l’hébergeur.*région.*médiateur/s);
   });
 
   it("covers the GDPR essentials and links to the other legal pages", () => {
