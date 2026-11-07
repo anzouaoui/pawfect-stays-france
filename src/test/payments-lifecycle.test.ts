@@ -296,9 +296,31 @@ describe("Hold creation and card confirmation", () => {
 
   it("deletes the request if the PaymentIntent cannot be created (no orphan request)", async () => {
     stripeHandler = () => fail(400, { message: "bad" });
-    await expect(create()).rejects.toThrow("Erreur de paiement");
+    // The traveler is told that nothing was created and the card was not solicited.
+    await expect(create()).rejects.toThrow("Aucune demande n’a été créée et votre carte n’a pas été sollicitée");
     const del = db.queries.find((q) => q.op === "delete");
     expect(del!.filters).toEqual([["id", BOOKING], ["status", "en attente"]]);
+  });
+
+  it("handles live keys on a Stripe account not activated yet (KYC): no request, safe message, one diagnostic log", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_live_123");
+    vi.stubEnv("STRIPE_PUBLISHABLE_KEY", "pk_live_123");
+    stripeHandler = () => fail(400, { type: "invalid_request_error", message: "Your account cannot currently make live charges." });
+    await expect(create()).rejects.toThrow("Le paiement en ligne est momentanément indisponible");
+    expect(stripePaths()).toEqual(["POST payment_intents"]);
+    expect(db.queries.find((q) => q.op === "delete")!.filters).toEqual([["id", BOOKING], ["status", "en attente"]]);
+    expect(statusUpdates()).toHaveLength(0);
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("(live_charges_disabled)"));
+    expect(JSON.stringify((console.error as unknown as ReturnType<typeof vi.fn>).mock.calls)).not.toContain("sk_live_123");
+  });
+
+  it("keeps a host acceptance retryable when the live account cannot charge", async () => {
+    stripeHandler = ({ method }) => method === "GET"
+      ? ok({ id: "pi_123", status: "requires_capture" })
+      : fail(400, { message: "Your account cannot currently make live charges." });
+    await expect(decide("acceptée", HOST)).rejects.toThrow("la demande reste en attente");
+    expect(statusUpdates()).toHaveLength(0);
+    expect(notifyBooking).not.toHaveBeenCalled();
   });
 
   it("cancels the PaymentIntent and deletes the request if linking fails", async () => {

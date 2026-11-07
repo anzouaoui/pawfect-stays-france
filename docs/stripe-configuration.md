@@ -67,6 +67,9 @@ Paramètres → **Moyens de paiement** (configuration par défaut) :
 
 ## 3. Passer du test au live
 
+Checklist complète (KYC, preuves à conserver, contrôle `bun run stripe:check`, recette) :
+[stripe-live-checklist.md](stripe-live-checklist.md).
+
 1. Testez d'abord avec `sk_test_…` et `pk_test_…`, par exemple avec la carte `4242 4242 4242 4242`, n'importe quelle date future et n'importe quel CVC. La carte `4000 0025 0000 3155` déclenche 3-D Secure.
 2. Une fois le compte activé, remplacez **les deux** clés **en même temps** par `sk_live_…` et `pk_live_…`. Si vous n'en changez qu'une, le contrôle de cohérence bloque le paiement, ce qui est volontaire.
 3. Faites une vraie réservation de faible montant, vérifiez l'empreinte dans Stripe (**Paiements → « Non capturé »**), puis refusez-la depuis l'Espace hôte pour la libérer.

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "email:check": "bun scripts/check-email.ts",
+    "stripe:check": "bun scripts/check-stripe.ts",
     "listings:seed": "bun scripts/seed-listings.ts"
   },
   "overrides": {

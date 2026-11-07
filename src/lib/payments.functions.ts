@@ -36,7 +36,14 @@ async function stripe(path: string, body?: Record<string, string>, idempotencyKe
   if (!res.ok || !json) {
     console.error("[stripe] erreur API", res.status, json?.error?.type, json?.error?.code, json?.error?.message);
     if (res.status === 401) cfg.logStripeConfigError({ code: "invalid_secret_key", detail: "Stripe refuse STRIPE_SECRET_KEY (401) : clé révoquée ou erronée." });
-    throw new Error(res.status === 401 ? cfg.PAYMENT_UNAVAILABLE_MESSAGE : "Erreur de paiement");
+    const liveDisabled = cfg.isLiveChargesDisabled(res.status, json?.error);
+    if (liveDisabled) {
+      cfg.logStripeConfigError({
+        code: "live_charges_disabled",
+        detail: "Le compte Stripe n'est pas activé pour les paiements live (KYC incomplet). Voir docs/stripe-live-checklist.md.",
+      });
+    }
+    throw new Error(res.status === 401 || liveDisabled ? cfg.PAYMENT_UNAVAILABLE_MESSAGE : "Erreur de paiement");
   }
   return json;
 }
@@ -133,9 +140,11 @@ export const createBookingWithHold = createServerFn({ method: "POST" })
         "metadata[traveler_id]": context.userId, "metadata[terms_version]": TERMS_VERSION,
         "metadata[terms_accepted_at]": termsAcceptedAt,
       }, `hold-${row.id}`);
-    } catch (e) {
+    } catch {
       await rollback("PaymentIntent non créé");
-      throw e;
+      // The request was deleted and no card was solicited: say so, whatever Stripe answered
+      // (account not activated for live, rejected parameters, outage…).
+      throw new Error(cfg.BOOKING_PAYMENT_UNAVAILABLE_MESSAGE);
     }
     const { error: linkError } = await db.from("booking_requests").update({ payment_intent_id: pi.id }).eq("id", row.id);
     if (linkError) {
