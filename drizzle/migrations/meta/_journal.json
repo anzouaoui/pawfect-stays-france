@@ -64,6 +64,13 @@
       "when": 1793100206754,
       "tag": "0008_user_roles_signup",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794056706506,
+      "tag": "0009_restrict_listing_photos_read",
+      "breakpoints": true
     }
   ]
 }
