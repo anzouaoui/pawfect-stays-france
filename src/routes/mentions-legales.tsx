@@ -34,8 +34,8 @@ function MentionsLegales() {
         <li>Immatriculation : SIRET 982 286 650 00022 (SIREN 982 286 650)</li>
         <li>TVA : TVA non applicable, art. 293 B du CGI</li>
         <li>E-mail : <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
-        {/* Temporaire, non conforme LCEN (art. 6-III et 19) : remplacer par un numéro dédié avant l’ouverture au public. */}
-        <li>Téléphone : communiqué sur demande à <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
+        {/* Temporaire, non conforme LCEN (art. 6-III-1 a) : remplacer par un numéro dédié avant l’ouverture au public (LEGAL_PENDING). */}
+        <li data-legal-pending="editeur-telephone">Téléphone : communiqué sur demande à <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a></li>
       </ul>
 
       <h2>2. Directeur de la publication</h2>
@@ -48,11 +48,11 @@ function MentionsLegales() {
       <p>
         Le Site, sa base de données et ses fichiers sont hébergés par Lovable (service Lovable Cloud) : Lovable Labs
         Sweden AB, Regeringsgatan 25, 111 53 Stockholm, Suède, société du groupe Lovable Labs Incorporated.
-        Téléphone : <Todo>téléphone de l’hébergeur, à demander à Lovable</Todo>.
+        Téléphone : <Todo id="hebergeur-telephone">téléphone de l’hébergeur, à demander à Lovable</Todo>.
       </p>
       <p>
         Lovable Cloud s’appuie sur l’infrastructure de Supabase pour la base de données et le stockage des fichiers.
-        Région d’hébergement des données : <Todo>région, à confirmer auprès de Lovable</Todo>.
+        Région d’hébergement des données : <Todo id="hebergeur-region">région, à confirmer auprès de Lovable</Todo>.
       </p>
       <p>
         Les paiements sont traités par Stripe Payments Europe, Limited, 1 Grand Canal Street Lower, Grand Canal Dock,
@@ -132,7 +132,7 @@ function MentionsLegales() {
       <p>
         Conformément aux articles L. 612-1 et suivants du Code de la consommation, tout consommateur peut recourir
         gratuitement à un médiateur de la consommation en vue de la résolution amiable d’un litige, après réclamation
-        écrite préalable auprès de PetInn restée sans réponse satisfaisante. Médiateur : <Todo>nom, adresse postale et
+        écrite préalable auprès de PetInn restée sans réponse satisfaisante. Médiateur : <Todo id="mediateur">nom, adresse postale et
         site internet du médiateur auquel l’éditeur a adhéré</Todo>. Les modalités de saisine sont détaillées à
         l’article 10 des <Link to="/cgu" className="underline">conditions générales d’utilisation</Link>.
       </p>
